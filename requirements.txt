@@ -1,0 +1,21 @@
+# ANIMA Python dependencies
+# Install with: pip install -r requirements.txt
+
+# Sensing layer
+mediapipe==0.10.14     # Pinned strictly because >0.10.14 on Mac loses mp.solutions
+opencv-python>=4.8.0   # Webcam capture for MediaPipe
+sounddevice>=0.4.6     # Microphone audio capture (S3, S4)
+numpy>=1.24.0          # Audio processing
+pynput>=1.7.6          # Keyboard/mouse monitoring (S5)
+
+# Audio classification (future: replace simple RMS with MFCC)
+librosa>=0.10.0        # MFCC feature extraction
+
+# Arduino communication
+pyserial>=3.5          # USB serial communication
+
+# Memory layer
+# sqlite3 is built into Python - no install needed
+
+# Utilities
+python-dotenv>=1.0.0   # Environment variables (optional)
