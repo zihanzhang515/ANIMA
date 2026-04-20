@@ -56,6 +56,18 @@ def on_reflex(reflex_name: str, params: dict):
     print(f"\n[MAIN] ⚡ Reflex → {reflex_name}")
     bridge.send_reflex(reflex_name, params)
 
+    # Briefly show reflex video on dashboard (auto-reverts to relaxed after 3s)
+    # Reflexes are momentary - they don't change the sustained emotion state
+    if reflex_name in ("alert", "shy"):
+        import threading
+        shared_state.update("current_emotion", reflex_name)
+        def revert_to_relaxed():
+            import time
+            time.sleep(3)
+            # Always return to relaxed after a reflex, not the previous emotion
+            shared_state.update("current_emotion", "relaxed")
+        threading.Thread(target=revert_to_relaxed, daemon=True).start()
+
 
 # ─── Main ──────────────────────────────────────────────────
 
@@ -69,14 +81,14 @@ def main():
     # Stop event shared by all sense threads
     stop_event = threading.Event()
 
-    # ── Start Sense Threads ────────────────────────────────
+    face_tracker_thread = threading.Thread(
+        target=run_face_tracker,
+        args=(stop_event,),
+        daemon=True,
+        name="FaceTracker"
+    )
     threads = [
-        threading.Thread(
-            target=run_face_tracker,
-            args=(stop_event,),
-            daemon=True,
-            name="FaceTracker"
-        ),
+        face_tracker_thread,
         threading.Thread(
             target=run_audio_detector,
             args=(stop_event,),
@@ -104,6 +116,13 @@ def main():
     context_pipeline.start()
     realtime_pipeline.start()
 
+    # Broadcast the initial emotion immediately so dashboard shows correct state on load
+    shared_state.update("current_emotion", "relaxed")
+
+    # ── Start Web Dashboard ────────────────────────────────
+    from web.server import start_dashboard
+    start_dashboard(pipeline=context_pipeline)
+
     # ── State Monitor (dev mode only) ──────────────────────
     def print_state():
         while not stop_event.is_set():
@@ -129,7 +148,11 @@ def main():
         context_pipeline.stop()
         realtime_pipeline.stop()
         bridge.disconnect()
-        time.sleep(1)
+        # Wait up to 2s for face_tracker to call cap.release() cleanly
+        face_tracker_thread.join(timeout=2.0)
+        if face_tracker_thread.is_alive():
+            print("[MAIN] Warning: face tracker didn't exit cleanly")
+        time.sleep(0.5)
         print("[MAIN] Goodbye.")
 
 

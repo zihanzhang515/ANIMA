@@ -149,7 +149,7 @@ def _check_habits(emotion: str, hour: int, day_of_week: int):
         print(f"[MEMORY] Error checking habits: {e}")
 
 
-def get_preemptive_emotion(hour: int, day_of_week: int) -> str | None:
+def get_preemptive_emotion(hour: int, day_of_week: int):
     """
     Check if there's a preemptive emotion for this time.
     Returns emotion name if a habit is flagged, else None.
@@ -162,9 +162,9 @@ def get_preemptive_emotion(hour: int, day_of_week: int) -> str | None:
 
         cursor.execute("""
             SELECT emotion FROM habits
-            WHERE hour_of_day = ? AND day_type = ? AND preemptive_flag = 1
+            WHERE pattern_key LIKE ? AND preemptive_flag = 1
             ORDER BY count DESC LIMIT 1
-        """, (hour, day_type))
+        """, (f"%_{hour:02d}_{day_type}",))
 
         row = cursor.fetchone()
         conn.close()

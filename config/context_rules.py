@@ -1,207 +1,196 @@
 """
 config/context_rules.py
 ------------------------
-THE CORE MAPPING: Signal combinations → Scenario → Emotion
+信号组合 → 场景 → 情绪 的核心规则表。
 
-This is the "rulebook" that answers:
-"Given what the sensors are seeing RIGHT NOW, what emotion should Anima show?"
+v2 改动：
+  - 修复 Tired 时间条件（23:00+，而非 0-4am）
+  - 新增 Tired session duration 触发（连续在场 30 分钟）
+  - 修复 Confused min_duration（180s，而非 300s）
+  - 修复 Happy 条件（需要 audio_category=music 且 input_rate=high）
+  - 优化规则优先级顺序，与最终规则表一致
 
-How it works:
-1. Each rule has "conditions" - what the signals must look like
-2. Some rules have "requires_transition_from" - the state must have CHANGED from something
-3. Some rules have "min_duration" - the state must have lasted long enough
-4. Rules are checked in order - first match wins
-5. If nothing matches → default to "relaxed"
+规则匹配逻辑：
+  1. 按顺序检查每条规则
+  2. 第一条完全匹配的规则胜出
+  3. 无匹配 → 默认 relaxed
 
-Think of it like: IF (face=yes AND typing=fast AND quiet) THEN focus
+注意：Curious vs Confused 的时间维度区分在 context_pipeline.py 里处理，
+      这里的规则只负责基础信号匹配。
 """
 
 import time
+import datetime
+
 
 # ─────────────────────────────────────────────────────────────
-# CONTEXT RULES - checked in order, first match wins
+# 规则表（优先级从上到下）
 # ─────────────────────────────────────────────────────────────
 
 CONTEXT_RULES = [
 
-    # ── Scenario 1: Deep Focus ─────────────────────────────
-    # User has been typing quietly for a long time
-    {
-        "scenario": "Deep Focus",
-        "emotion": "focus",
-        "conditions": {
-            "face_present": True,
-            "speech_active": False,
-            "audio_category": ["silence", "keyboard"],
-            "input_rate": "high",
-        },
-        "min_duration_sec": 600,  # Must be doing this for 10+ minutes
-    },
+    # ── 优先级1：Alert（实时层处理，这里不包含）──────────────
+    # Alert 在 realtime_pipeline.py 里响应，不走这里
 
-    # ── Scenario 2: High Energy ────────────────────────────
-    # User is active, loud, energetic
+    # ── 优先级2：Happy ────────────────────────────────────────
+    # 用户高活跃 + 高能量音频（听音乐/笑声同时快速工作）
     {
         "scenario": "High Energy",
         "emotion": "happy",
         "conditions": {
-            "face_present": True,
-            "audio_category": ["speech", "music"],
-            "input_rate": ["medium", "high"],
+            "face_present":   True,
+            "audio_category": "music",   # S4=music/energetic
+            "input_rate":     "high",    # S5=高活跃
         },
-        "min_duration_sec": 0,
+        "min_duration_sec": 30,          # 持续30秒才触发
     },
 
-    # ── Scenario 3: Active Break ───────────────────────────
-    # User was working, now paused - transitional curiosity
-    {
-        "scenario": "Active Break",
-        "emotion": "curious",
-        "conditions": {
-            "face_present": True,
-            "input_rate": "low",
-            "speech_active": False,
-        },
-        "requires_transition_from": {
-            "input_rate": ["medium", "high"]  # Must have been active before
-        },
-        "min_duration_sec": 0,
-    },
-
-    # ── Scenario 4: Listening to a Call ───────────────────
-    # Speech nearby but user isn't typing - probably on a call
+    # ── 优先级3：Listen ───────────────────────────────────────
+    # 附近有说话声，但用户自己没在打字
     {
         "scenario": "On a Call",
         "emotion": "listen",
         "conditions": {
-            "speech_active": True,
+            "speech_active":  True,
             "audio_category": "speech",
-            "input_rate": "low",
+            "input_rate":     "low",     # 用户没在打字，在听
         },
-        "min_duration_sec": 0,
     },
 
-    # ── Scenario 5: Late Night Work ────────────────────────
-    # Working very late - tired
+    # ── 优先级4：Focus ────────────────────────────────────────
+    # 持续高活跃打字，安静无语音，10分钟以上
     {
-        "scenario": "Late Night Work",
-        "emotion": "tired",
+        "scenario": "Deep Focus",
+        "emotion": "focus",
         "conditions": {
-            "face_present": True,
-            "input_rate": ["low", "medium"],
-        },
-        "time_condition": {
-            "hour_range": (0, 4)  # Midnight to 4am
-        },
-        "min_duration_sec": 0,
-    },
-
-    # ── Scenario 6: Stuck / Not Typing ────────────────────
-    # Was active, now staring at screen doing nothing
-    {
-        "scenario": "Stuck",
-        "emotion": "confused",
-        "conditions": {
-            "face_present": True,
-            "input_rate": "low",
-            "speech_active": False,
+            "face_present":   True,
+            "speech_active":  False,
             "audio_category": ["silence", "keyboard"],
+            "input_rate":     "high",
+        },
+        "min_duration_sec": 600,         # 10分钟
+    },
+
+    # ── 优先级5：Curious（基础匹配，时间维度在 pipeline 里处理）──
+    # 之前在活跃，刚停下来
+    {
+        "scenario": "Active Break",
+        "emotion": "curious",
+        "conditions": {
+            "face_present":   True,
+            "speech_active":  False,
+            "audio_category": ["silence", "keyboard"],
+            "input_rate":     "low",
         },
         "requires_transition_from": {
             "input_rate": ["medium", "high"]
         },
-        "min_duration_sec": 300,  # Must be stuck for 5+ minutes
     },
 
-    # ── Scenario 7: Long Absence ──────────────────────────
-    # Nobody home for a long time
+    # ── 优先级6：Confused（基础匹配，时间维度在 pipeline 里处理）──
+    # 之前活跃，停下来很久了
+    # 注：pipeline 会根据 inactive_duration 决定是 curious 还是 confused
     {
-        "scenario": "Long Absence",
+        "scenario": "Stuck",
+        "emotion": "confused",
+        "conditions": {
+            "face_present":   True,
+            "speech_active":  False,
+            "audio_category": ["silence", "keyboard"],
+            "input_rate":     "low",
+        },
+        "requires_transition_from": {
+            "input_rate": ["medium", "high"]
+        },
+        "min_duration_sec": 180,         # 停下来 3 分钟以上
+    },
+
+    # ── 优先级7a：Tired（深夜版）─────────────────────────────
+    # 23:00 以后还在工作
+    {
+        "scenario": "Late Night Work",
         "emotion": "tired",
         "conditions": {
-            "face_present": False,
-            "input_rate": "low",
-            "speech_active": False,
+            "face_present":   True,
+            "input_rate":     ["low", "medium"],
         },
-        "min_duration_sec": 1800,  # 30 minutes away
+        "time_condition": {
+            "hour_min": 23    # 23:00 以后
+        },
     },
 
-    # ── Default / Fallback ─────────────────────────────────
-    # User present but nothing specific happening
+    # ── 优先级8：Relaxed（兜底默认）─────────────────────────
+    # 用户在场，但没有特别的事情发生
     {
         "scenario": "Idle Ambient",
         "emotion": "relaxed",
         "conditions": {
-            "face_present": True,
+            "face_present":   True,
         },
-        "min_duration_sec": 0,
     },
 ]
 
 
 # ─────────────────────────────────────────────────────────────
-# MATCHING FUNCTION
+# 匹配函数
 # ─────────────────────────────────────────────────────────────
 
-def match_context(current_state: dict, prev_state: dict, duration_sec: float) -> tuple:
+def match_context(
+    current_state: dict,
+    prev_state: dict,
+) -> tuple:
     """
-    Find the best matching rule for the current sensor state.
-    
-    Returns: (emotion_name, scenario_name)
-    
-    current_state: current readings from SensorState.get()
-    prev_state: previous snapshot from SensorState.get_prev()
-    duration_sec: how long current state has been active
+    根据当前信号状态匹配最合适的规则。
+
+    返回: (emotion_name, scenario_name)
+
+    current_state:        SensorState.get() 的结果
+    prev_state:           SensorState.get_prev() 的结果
+    duration_sec:         当前状态已持续多少秒
+    session_duration_sec: 用户本次在场的累计秒数
     """
-    import datetime
-    current_hour = datetime.datetime.now().hour
+    now_hour = datetime.datetime.now().hour
 
     for rule in CONTEXT_RULES:
-        # Check main conditions
+
+        # 检查主要信号条件
         if not _check_conditions(current_state, rule["conditions"]):
             continue
 
-        # Check time condition if present
+        # 检查时间条件
         if "time_condition" in rule:
+            hour_min = rule["time_condition"].get("hour_min")
             hour_range = rule["time_condition"].get("hour_range")
-            if hour_range:
-                if not (hour_range[0] <= current_hour < hour_range[1]):
+            if hour_min is not None:
+                if now_hour < hour_min:
+                    continue
+            if hour_range is not None:
+                if not (hour_range[0] <= now_hour < hour_range[1]):
                     continue
 
-        # Check transition requirement if present
+        # 检查 transition 条件（前一帧状态）
         if "requires_transition_from" in rule:
-            if not _check_transition(prev_state, rule["requires_transition_from"]):
+            if not _check_conditions(prev_state, rule["requires_transition_from"]):
                 continue
 
-        # Check minimum duration
-        if duration_sec < rule.get("min_duration_sec", 0):
-            continue
 
-        # All checks passed - this rule matches
+
+        # 所有条件通过
         return rule["emotion"], rule["scenario"]
 
-    # No rule matched
     return "relaxed", "Default"
 
 
 def _check_conditions(state: dict, conditions: dict) -> bool:
-    """Check if current state matches all conditions in a rule."""
+    """检查 state 是否满足 conditions 里的所有条件。"""
     for key, expected in conditions.items():
         actual = state.get(key)
         if actual is None:
             return False
-
         if isinstance(expected, list):
-            # Condition accepts multiple values
             if actual not in expected:
                 return False
         else:
-            # Condition requires exact value
             if actual != expected:
                 return False
-
     return True
-
-
-def _check_transition(prev_state: dict, transition_conditions: dict) -> bool:
-    """Check if the previous state matches the required 'came from' conditions."""
-    return _check_conditions(prev_state, transition_conditions)

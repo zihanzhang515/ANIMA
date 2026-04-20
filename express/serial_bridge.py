@@ -108,7 +108,8 @@ class SerialBridge:
         json_str = json.dumps(cmd) + "\n"
 
         if self._simulation_mode:
-            print(f"[EXPRESS] SIM → {json_str.strip()}")
+            if cmd.get("type") != "track":
+                print(f"[EXPRESS] SIM → {json_str.strip()}")
             return
 
         with self._lock:
@@ -117,7 +118,7 @@ class SerialBridge:
             except Exception as e:
                 print(f"[EXPRESS] Send error: {e}")
 
-    def _auto_detect_port(self) -> str | None:
+    def _auto_detect_port(self):
         """Try to find Arduino's serial port automatically."""
         import glob
         import sys
