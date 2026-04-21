@@ -75,14 +75,24 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         self.wfile.write(body)
 
 
+_httpd_instance = None
+
 def run_server():
+    global _httpd_instance
     web_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(web_dir)
     server_address = ('', 8080)
     HTTPServer.allow_reuse_address = True
-    httpd = HTTPServer(server_address, DashboardHandler)
+    _httpd_instance = HTTPServer(server_address, DashboardHandler)
     print("🌐 [WEB] Dashboard → http://localhost:8080")
-    httpd.serve_forever()
+    _httpd_instance.serve_forever()
+
+
+def stop_dashboard():
+    global _httpd_instance
+    if _httpd_instance:
+        _httpd_instance.shutdown()
+        _httpd_instance = None
 
 
 def start_dashboard(pipeline=None):

@@ -89,6 +89,14 @@ class SensorState:
     # 读取基础状态
     # ─────────────────────────────────────────
 
+    def force_update(self, key: str, value):
+        """强制更新，即使值相同也写入（用于初始化广播）。"""
+        with self._lock:
+            if key not in self._state:
+                return
+            self._state[key] = value
+            self._state["last_updated"] = time.time()
+
     def get(self) -> dict:
         """当前信号快照（线程安全副本）。"""
         with self._lock:

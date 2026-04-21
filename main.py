@@ -39,10 +39,23 @@ if DEV_MODE:
 
 # ─── Express Callbacks ─────────────────────────────────────
 
+# Ref to context_pipeline so reflexes can read the current sustained emotion
+_context_pipeline_ref = None
+
 def on_emotion_change(emotion_name: str, scenario: str, params: dict):
     """Called by ContextPipeline when emotion should change."""
     print(f"\n[MAIN] ✨ Emotion → {emotion_name} ({scenario})")
-    bridge.send_emotion(params)
+    bridge.send_emotion(params)  # ENTER 阶段：平滑过渡到目标姿态
+
+    # ── HOLD 阶段：进入动画结束后切换到持续 idle 循环 ──
+    hold_params = params.get("hold_params")
+    if hold_params:
+        enter_ms = params.get("duration_ms", 3000)
+        def switch_to_hold(ename=emotion_name, hp=hold_params, delay_s=enter_ms / 1000 + 0.5):
+            time.sleep(delay_s)
+            bridge.send_hold(ename, hp)
+            print(f"[MAIN] 💤 Hold → {ename} ({hp.get('idle_type', 'subtle')})")
+        threading.Thread(target=switch_to_hold, daemon=True, name=f"Hold_{emotion_name}").start()
 
 
 def on_face_track(yaw: int):
@@ -56,17 +69,26 @@ def on_reflex(reflex_name: str, params: dict):
     print(f"\n[MAIN] ⚡ Reflex → {reflex_name}")
     bridge.send_reflex(reflex_name, params)
 
-    # Briefly show reflex video on dashboard (auto-reverts to relaxed after 3s)
-    # Reflexes are momentary - they don't change the sustained emotion state
+    # Reflexes are momentary - they don't change or log the sustained emotion state.
     if reflex_name in ("alert", "shy"):
-        import threading
-        shared_state.update("current_emotion", reflex_name)
-        def revert_to_relaxed():
-            import time
+        # 短暂在 dashboard 显示反射状态，然后恢复 Tier 1 情绪
+        shared_state.force_update("current_emotion", reflex_name)
+        def revert_to_persistent():
             time.sleep(3)
-            # Always return to relaxed after a reflex, not the previous emotion
-            shared_state.update("current_emotion", "relaxed")
-        threading.Thread(target=revert_to_relaxed, daemon=True).start()
+            persistent = _context_pipeline_ref.current_emotion if _context_pipeline_ref else "relaxed"
+            shared_state.force_update("current_emotion", persistent)
+            bridge.send_emotion(get_emotion(persistent))  # 硬件回位：物理回到 Tier 1 姿态
+        threading.Thread(target=revert_to_persistent, daemon=True).start()
+
+    elif reflex_name == "greeting":
+        # 返回识别：纯物理手势，不改变 dashboard 显示的情绪状态
+        # 完成后让 Arduino 回到当前 Tier 1 姿态（为将来 Arduino 加动画序列做准备）
+        def revert_after_greeting():
+            duration_s = params.get("duration_ms", 1500) / 1000 + 0.5
+            time.sleep(duration_s)
+            persistent = _context_pipeline_ref.current_emotion if _context_pipeline_ref else "relaxed"
+            bridge.send_emotion(get_emotion(persistent))  # 硬件回位
+        threading.Thread(target=revert_after_greeting, daemon=True).start()
 
 
 # ─── Main ──────────────────────────────────────────────────
@@ -107,7 +129,9 @@ def main():
         t.start()
 
     # ── Start Understand Pipelines ─────────────────────────
+    global _context_pipeline_ref
     context_pipeline = ContextPipeline(on_emotion_change=on_emotion_change)
+    _context_pipeline_ref = context_pipeline
     realtime_pipeline = RealtimePipeline(
         on_face_track=on_face_track,
         on_reflex=on_reflex
@@ -116,8 +140,9 @@ def main():
     context_pipeline.start()
     realtime_pipeline.start()
 
-    # Broadcast the initial emotion immediately so dashboard shows correct state on load
-    shared_state.update("current_emotion", "relaxed")
+    # Force-broadcast the initial emotion so dashboard shows correct state on load
+    # (use force_update to bypass the no-change guard in update())
+    shared_state.force_update("current_emotion", "relaxed")
 
     # ── Start Web Dashboard ────────────────────────────────
     from web.server import start_dashboard
@@ -148,11 +173,14 @@ def main():
         context_pipeline.stop()
         realtime_pipeline.stop()
         bridge.disconnect()
+        # Shut down HTTP server explicitly so port is released immediately
+        from web.server import stop_dashboard
+        stop_dashboard()
         # Wait up to 2s for face_tracker to call cap.release() cleanly
         face_tracker_thread.join(timeout=2.0)
         if face_tracker_thread.is_alive():
             print("[MAIN] Warning: face tracker didn't exit cleanly")
-        time.sleep(0.5)
+        time.sleep(0.2)
         print("[MAIN] Goodbye.")
 
 

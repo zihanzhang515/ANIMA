@@ -128,9 +128,36 @@ class ContextPipeline:
             current, inactive_secs, was_active, session_duration, active_secs, absent_secs
         )
 
+        # ── 第二步.5：记忆预判 ──────────────────────────────────────────────
+        # 仅当信号层结果是 relaxed（无强触发）且人在场时才检查
+        # 如果记忆里有当前时间段的 habit，提前触发对应情绪
+        if new_emotion == "relaxed" and current["face_present"]:
+            try:
+                from memory.memory_store import get_preemptive_emotion
+                now_dt = datetime.datetime.now()
+                preemptive = get_preemptive_emotion(now_dt.hour, now_dt.weekday())
+                if preemptive and preemptive != self.current_emotion:
+                    print(f"[UNDERSTAND] 🧠 记忆预判：{preemptive}（{now_dt.hour:02d}:xx 的习惯）")
+                    new_emotion = preemptive
+                    new_scenario = "Memory Anticipated"
+            except Exception as mem_err:
+                print(f"[UNDERSTAND] 记忆预判查询失败: {mem_err}")
+
         # ── 第三步：生成 token（原始数据到此止步）──
         token = self._generate_token(current, new_emotion, new_scenario)
         print(f"[UNDERSTAND] Token: {token}")
+
+        # ── 同时追加写入 token 日志文件 ──
+        try:
+            import os, datetime
+            log_dir  = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs")
+            os.makedirs(log_dir, exist_ok=True)
+            log_path = os.path.join(log_dir, "token_log.txt")
+            ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            with open(log_path, "a", encoding="utf-8") as lf:
+                lf.write(f"[{ts}] {token}\n")
+        except Exception as log_err:
+            print(f"[UNDERSTAND] Token log write failed: {log_err}")
 
         # ── 第四步：写入记忆 ──
         try:

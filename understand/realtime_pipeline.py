@@ -31,9 +31,13 @@ SHY_TRIGGER_FRAMES    = 6      # 需要连续 6 帧超阈值（约 0.3s）
 
 # 冷却时间
 COOLDOWNS = {
-    "alert": 10,   # 秒
-    "shy":   60,   # 秒
+    "alert":    10,   # 秒
+    "shy":      60,   # 秒
+    "greeting": 120,  # 2分钟内只打招呼一次
 }
+
+# 返回识别：离开超过多少秒才算“运离”
+RETURN_MIN_ABSENCE_SECS = 60
 
 
 class RealtimePipeline:
@@ -47,13 +51,19 @@ class RealtimePipeline:
         self._stop_event   = threading.Event()
 
         # 冷却计时（实例变量，非全局）
-        self._last_reflex_time = {"alert": 0.0, "shy": 0.0}
+        self._last_reflex_time = {"alert": 0.0, "shy": 0.0, "greeting": 0.0}
 
         # Shy 连续帧计数
         self._shy_frame_count  = 0
         # 记录近期 face_size 历史（用于计算基平线）
         import collections
         self._face_size_history = collections.deque(maxlen=30)  # 记忆最近 30 帧（1.5s）
+
+        # ── 返回识别追踪 ──
+        # 记录上次看到人脸的时间（用于判断离开时长）
+        self._last_face_seen      = 0.0
+        self._face_was_present    = False
+        self._has_ever_seen_face  = False  # 防止系统刚启动时第一次出现人脸误触发
 
     # ─────────────────────────────────────────
     # 线程管理
@@ -74,6 +84,7 @@ class RealtimePipeline:
 
     def _run(self):
         while not self._stop_event.is_set():
+            now   = time.time()
             state = shared_state.get()
 
             # 1. Face tracking
@@ -81,6 +92,9 @@ class RealtimePipeline:
 
             # 2. Reflex checks
             self._check_reflexes(state)
+
+            # 3. Return recognition
+            self._check_return_recognition(state, now)
 
             time.sleep(REALTIME_INTERVAL)
 
@@ -151,3 +165,27 @@ class RealtimePipeline:
 
         if self.on_reflex:
             self.on_reflex(name, params)
+
+    def _check_return_recognition(self, state: dict, now: float):
+        """
+        检测用户在长时间离开后返回，触发“认出你了”手势。
+
+        逻辑：
+          - face_present 曾经是 True（展示过至少一次）
+          - face_present 变成 False，开始计时
+          - face_present 重新变成 True，且离开时长 > RETURN_MIN_ABSENCE_SECS
+          → 触发 greeting 反射
+        """
+        face = state.get("face_present", False)
+
+        if face:
+            if not self._face_was_present and self._has_ever_seen_face:
+                # 人脸重新出现（不是第一次）
+                absence_secs = now - self._last_face_seen
+                if absence_secs >= RETURN_MIN_ABSENCE_SECS:
+                    print(f"[REALTIME] 👋 返回识别（离开 {absence_secs:.0f}s）→ greeting")
+                    self._trigger_reflex("greeting", now)
+            self._last_face_seen     = now
+            self._has_ever_seen_face = True
+
+        self._face_was_present = face

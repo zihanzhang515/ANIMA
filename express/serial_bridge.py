@@ -103,6 +103,26 @@ class SerialBridge:
         cmd = {"type": "idle", "ear": ear, "yaw": yaw, "pitch": pitch}
         self._send(cmd)
 
+    def send_hold(self, emotion_name: str, hold_params: dict):
+        """
+        Send a hold/idle command — tells Arduino to enter sustained idle loop
+        for the current emotion after the ENTER animation completes.
+
+        Arduino will loop a gentle micro-motion until it receives a new command.
+        Protocol: {"type":"hold","name":"happy","idle_type":"ear_twitch","idle_range":20,...}
+        """
+        cmd = {
+            "type":             "hold",
+            "name":             emotion_name,
+            "idle_type":        hold_params.get("idle_type", "subtle"),
+            "idle_range":       hold_params.get("idle_range", 5),
+            "idle_interval_ms": hold_params.get("idle_interval_ms", 3000),
+            "r":                hold_params.get("r", 255),
+            "g":                hold_params.get("g", 245),
+            "b":                hold_params.get("b", 224),
+        }
+        self._send(cmd)
+
     def _send(self, cmd: dict):
         """Send a JSON command to Arduino."""
         json_str = json.dumps(cmd) + "\n"

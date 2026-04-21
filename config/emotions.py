@@ -23,6 +23,10 @@ Head Pitch (up-down):
   100° = slight up
   75° = down / tired
 
+ENTER + HOLD 两阶段说明：
+  - 主参数（ear/yaw/pitch/r/g/b）是 ENTER 阶段目标姿态，执行一次动画过渡
+  - hold_params 是 HOLD 阶段的持续 idle 定义，Arduino 进入 idle 循环直到收到新指令
+
 NOTE: These are placeholder values - update after RQ1 results confirm
 which expressions pass System 1 threshold.
 """
@@ -40,7 +44,14 @@ EMOTION_PARAMS = {
         "light_mode": "steady",
         "duration_ms": 3000,
         "movement_speed": "fast",     # snap to position
-        "notes": "Fast snap to side then hold. Like hearing something."
+        "notes": "Fast snap to side then hold. Like hearing something.",
+        "hold_params": {
+            "idle_type": "head_sway",      # 轻微头部左右晃动
+            "idle_range": 8,               # ±8度
+            "idle_interval_ms": 3000,      # 每3秒动一下
+            "r": 0, "g": 206, "b": 209,
+            "light_mode": "steady"
+        }
     },
 
     "happy": {
@@ -52,7 +63,14 @@ EMOTION_PARAMS = {
         "light_mode": "fast_pulse",   # 2Hz
         "duration_ms": 3000,
         "movement_speed": "fast",
-        "notes": "Ear fans, head nods and wiggles. Excited dog energy."
+        "notes": "Ear fans, head nods and wiggles. Excited dog energy.",
+        "hold_params": {
+            "idle_type": "ear_twitch",     # 小幅耳朵抖动
+            "idle_range": 20,              # ±20度
+            "idle_interval_ms": 2000,      # 每2秒动一下
+            "r": 255, "g": 140, "b": 0,
+            "light_mode": "slow_breath"    # 进入 hold 后从 fast_pulse 换成慢呼吸
+        }
     },
 
     "focus": {
@@ -64,7 +82,14 @@ EMOTION_PARAMS = {
         "light_mode": "slow_breath",  # 0.2Hz - barely perceptible
         "duration_ms": 5000,
         "movement_speed": "slow",     # Ears slowly fold back
-        "notes": "Cat in hunting stillness. Zero movement once settled."
+        "notes": "Cat in hunting stillness. Zero movement once settled.",
+        "hold_params": {
+            "idle_type": "none",           # 完全静止
+            "idle_range": 0,
+            "idle_interval_ms": 8000,
+            "r": 0, "g": 0, "b": 100,
+            "light_mode": "slow_breath"
+        }
     },
 
     "relaxed": {
@@ -77,7 +102,14 @@ EMOTION_PARAMS = {
         "duration_ms": 4000,
         "movement_speed": "slow",
         "notes": "DEFAULT STATE. Idle motion active here only.",
-        "is_default": True
+        "is_default": True,
+        "hold_params": {
+            "idle_type": "gentle_scan",    # 缓慢左右小范围扫描
+            "idle_range": 10,              # ±10度
+            "idle_interval_ms": 4000,      # 每4秒动一下
+            "r": 255, "g": 245, "b": 224,
+            "light_mode": "slow_breath"
+        }
     },
 
     "tired": {
@@ -89,7 +121,14 @@ EMOTION_PARAMS = {
         "light_mode": "fade_out",     # Gradually dimming
         "duration_ms": 5000,
         "movement_speed": "very_slow",  # Like losing neck muscle support
-        "notes": "Very slow movement. Head sinks. Like exhaustion."
+        "notes": "Very slow movement. Head sinks. Like exhaustion.",
+        "hold_params": {
+            "idle_type": "droop",          # 头部缓慢下沉感
+            "idle_range": 5,               # ±5度
+            "idle_interval_ms": 6000,      # 很慢，每6秒轻微一动
+            "r": 100, "g": 70, "b": 0,
+            "light_mode": "fade_out"
+        }
     },
 
     "confused": {
@@ -104,7 +143,14 @@ EMOTION_PARAMS = {
         "light_mode": "steady_dim",
         "duration_ms": 4000,
         "movement_speed": "medium",
-        "notes": "Asymmetric ears create visible imbalance. Head tilts slightly up."
+        "notes": "Asymmetric ears create visible imbalance. Head tilts slightly up.",
+        "hold_params": {
+            "idle_type": "head_tilt",      # 头部小角度歪动（不确定感）
+            "idle_range": 5,               # ±5度
+            "idle_interval_ms": 4000,
+            "r": 80, "g": 10, "b": 130,
+            "light_mode": "steady_dim"
+        }
     },
 
     "listen": {
@@ -116,7 +162,14 @@ EMOTION_PARAMS = {
         "light_mode": "steady",
         "duration_ms": 3000,
         "movement_speed": "medium",
-        "notes": "Ears forward, locked still. Head toward voice source."
+        "notes": "Ears forward, locked still. Head toward voice source.",
+        "hold_params": {
+            "idle_type": "ear_track",      # 耳朵追踪声音方向的微小调整
+            "idle_range": 5,               # ±5度
+            "idle_interval_ms": 2000,
+            "r": 34, "g": 139, "b": 34,
+            "light_mode": "steady"
+        }
     },
 
     # ── Tier 2: Reflexive Behaviors ───────────────────────
@@ -147,6 +200,19 @@ EMOTION_PARAMS = {
         "cooldown_sec": 30,
         "movement_speed": "slow",     # Shy is slow, not scared
         "notes": "Slow avoidance. Like a shy child. Distinct from fear."
+    },
+
+    "reflex_greeting": {
+        "tier": 2,
+        "ear": 90,          # 耳朵快速竖起
+        "yaw": 90,          # 正视前方
+        "pitch": 95,        # 微微抬头
+        "r": 255, "g": 200, "b": 50,  # 暖金色
+        "light_mode": "quick_pulse",
+        "duration_ms": 1500,
+        "cooldown_sec": 120,          # 2分钟内只触发一次
+        "movement_speed": "fast",
+        "notes": "Quick ear perk when user returns after >60s absence. 'I see you again.'"
     },
 }
 
