@@ -72,6 +72,7 @@ class SerialBridge:
         """Send an emotion command to Arduino."""
         cmd = {
             "type": "emotion",
+            "name":  params.get("name", "relaxed"),
             "ear":   params.get("ear", 45),
             "yaw":   params.get("yaw", 90),
             "pitch": params.get("pitch", 90),

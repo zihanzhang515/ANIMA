@@ -58,6 +58,17 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     # Reset hold timer so it can switch away immediately
                     context_pipeline_ref.emotion_entered_at = time.time() - 999
 
+                # Send hardware command to Arduino
+                from express.serial_bridge import bridge
+                from config.emotions import get_emotion
+                
+                if emotion in ['alert', 'shy']:
+                    params = get_emotion(f"reflex_{emotion}")
+                    bridge.send_reflex(emotion, params)
+                else:
+                    params = get_emotion(emotion)
+                    bridge.send_emotion(params)
+
                 print(f"[WEB] 🎛️  Injected emotion: {emotion}")
                 self._json({'ok': True, 'emotion': emotion})
             except Exception as e:

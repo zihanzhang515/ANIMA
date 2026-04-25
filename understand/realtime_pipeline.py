@@ -1,191 +1,149 @@
 """
-understand/realtime_pipeline.py
---------------------------------
-实时反射层（<100ms）。
+understand/realtime_pipeline.py — v5
 
-处理：
-  1. Face tracking — 头部跟随用户脸部位置
-  2. Alert reflex — 突发声音触发（接入 audio_spike）
-  3. Shy reflex   — 用户靠近触发（修复触发逻辑）
+Shy 触发逻辑完全重写：
+- 不再检测 face_x 位置（正常坐着就居中，没意义）
+- 改为检测脸部大小突然增大（人往前靠近摄像头）
+- 触发条件：face_size 在 1 秒内增大超过 SHY_SIZE_DELTA
+  且增大后的 face_size 超过 SHY_SIZE_MIN（确认真的很近了）
 
-v2 改动：
-  - Alert 接入 shared_state["audio_spike"]（原来是 TODO）
-  - Shy 修复触发条件（原来是 face_centered，现在加面部尺寸代理判断）
-  - 冷却逻辑改为实例变量，避免全局状态
+正常坐着使用电脑：face_size ≈ 0.10~0.20
+明显靠近摄像头：face_size > 0.30~0.35
 """
 
 import time
+import random
 import threading
 from sense.sensor_state import shared_state
 from config.emotions import EMOTION_PARAMS
 
-# 检查频率
-REALTIME_INTERVAL = 0.05   # 50ms = 20Hz
+REALTIME_INTERVAL = 0.05
 
-# Shy 触发：人脸视在大小迅速增大（代理局部快速靠近）
-# face_size = bbox.width，正常工作距离大约 0.15~0.30
-# 超过 SHY_SIZE_THRESHOLD 认为靠近
-SHY_SIZE_THRESHOLD    = 0.40   # bbox.width > 0.40 认为用户明显靠近
-SHY_MIN_DELTA         = 0.12   # 当前帧比历史均值大 0.12（即迅速靠近）也触发
-SHY_TRIGGER_FRAMES    = 6      # 需要连续 6 帧超阈值（约 0.3s）
+IDLE_MIN_SEC = 8
+IDLE_MAX_SEC = 20
 
-# 冷却时间
 COOLDOWNS = {
-    "alert":    10,   # 秒
-    "shy":      60,   # 秒
-    "greeting": 120,  # 2分钟内只打招呼一次
+    "alert": 8,
+    "shy":   45,
 }
+_last_reflex_time = {"alert": 0, "shy": 0}
 
-# 返回识别：离开超过多少秒才算“运离”
-RETURN_MIN_ABSENCE_SECS = 60
+TRACKING_EMOTIONS  = {"listen", "curious"}
+NO_REFLEX_EMOTIONS = {"focus", "tired"}
+
+# ─── Shy 检测参数 ─────────────────────────────────────────────
+# 脸部大小基线（用滑动平均记录"正常"距离）
+_face_size_baseline  = 0.15    # 初始估计，运行时会自动校准
+_BASELINE_ALPHA      = 0.02    # 基线更新速度（慢速适应，不被瞬时值影响）
+
+SHY_SIZE_DELTA       = 0.10    # 比基线大这么多才算"突然靠近"
+SHY_SIZE_MIN         = 0.35    # 靠近后脸部至少要这么大才触发
+SHY_SUSTAIN_SEC      = 1.5     # 需要持续靠近 1.5 秒才触发
+
+_shy_approach_start  = 0.0     # 开始靠近的时间
 
 
 class RealtimePipeline:
-    def __init__(self, on_face_track=None, on_reflex=None):
-        """
-        on_face_track: callback(yaw_angle) — 每帧检测到人脸时调用
-        on_reflex:     callback(reflex_name, params) — 反射触发时调用
-        """
+    def __init__(self, on_face_track=None, on_reflex=None, on_idle=None):
         self.on_face_track = on_face_track
         self.on_reflex     = on_reflex
+        self.on_idle       = on_idle
         self._stop_event   = threading.Event()
+        self._next_idle_time = time.time() + random.uniform(IDLE_MIN_SEC, IDLE_MAX_SEC)
+        self.current_emotion = "relaxed"
 
-        # 冷却计时（实例变量，非全局）
-        self._last_reflex_time = {"alert": 0.0, "shy": 0.0, "greeting": 0.0}
-
-        # Shy 连续帧计数
-        self._shy_frame_count  = 0
-        # 记录近期 face_size 历史（用于计算基平线）
-        import collections
-        self._face_size_history = collections.deque(maxlen=30)  # 记忆最近 30 帧（1.5s）
-
-        # ── 返回识别追踪 ──
-        # 记录上次看到人脸的时间（用于判断离开时长）
-        self._last_face_seen      = 0.0
-        self._face_was_present    = False
-        self._has_ever_seen_face  = False  # 防止系统刚启动时第一次出现人脸误触发
-
-    # ─────────────────────────────────────────
-    # 线程管理
-    # ─────────────────────────────────────────
+    def set_emotion(self, emotion_name: str):
+        self.current_emotion = emotion_name
+        self._next_idle_time = time.time() + random.uniform(IDLE_MIN_SEC, IDLE_MAX_SEC)
 
     def start(self):
         thread = threading.Thread(
-            target=self._run,
-            daemon=True,
-            name="RealtimePipeline"
+            target=self._run, daemon=True, name="RealtimePipeline"
         )
         thread.start()
         print("[REALTIME] Pipeline started.")
+        print(f"[REALTIME] Shy: 脸部需比基线大 {SHY_SIZE_DELTA:.0%}，"
+              f"且大于 {SHY_SIZE_MIN:.0%}，持续 {SHY_SUSTAIN_SEC}s")
         return thread
 
     def stop(self):
         self._stop_event.set()
 
     def _run(self):
+        global _face_size_baseline, _shy_approach_start
+
         while not self._stop_event.is_set():
-            now   = time.time()
             state = shared_state.get()
+            now   = time.time()
 
-            # 1. Face tracking
-            self._handle_face_track(state)
+            # ── Face tracking（仅 listen/curious）────────────
+            if state["face_present"] and self.on_face_track:
+                if self.current_emotion in TRACKING_EMOTIONS:
+                    yaw = int(40 + state["face_x"] * 40)
+                    yaw = max(20, min(100, yaw))
+                    self.on_face_track(yaw)
 
-            # 2. Reflex checks
-            self._check_reflexes(state)
+            # ── 更新脸部大小基线（慢速移动平均）──────────────
+            if state["face_present"] and state["face_size"] > 0:
+                _face_size_baseline = (
+                    _BASELINE_ALPHA * state["face_size"]
+                    + (1 - _BASELINE_ALPHA) * _face_size_baseline
+                )
 
-            # 3. Return recognition
-            self._check_return_recognition(state, now)
+            # ── Idle 定时触发 ─────────────────────────────────
+            if now >= self._next_idle_time:
+                if self.on_idle:
+                    self.on_idle()
+                self._next_idle_time = now + random.uniform(IDLE_MIN_SEC, IDLE_MAX_SEC)
+
+            # ── 反射检测 ─────────────────────────────────────
+            if self.current_emotion not in NO_REFLEX_EMOTIONS:
+                self._check_alert(state, now)
+                self._check_shy(state, now)
 
             time.sleep(REALTIME_INTERVAL)
 
-    # ─────────────────────────────────────────
-    # Face tracking
-    # ─────────────────────────────────────────
+    def _check_alert(self, state: dict, now: float):
+        if state.get("audio_spike") and \
+           now - _last_reflex_time["alert"] > COOLDOWNS["alert"]:
+            _last_reflex_time["alert"] = now
+            params = EMOTION_PARAMS.get("reflex_alert", {})
+            print("[REALTIME] ⚡ Alert triggered")
+            if self.on_reflex:
+                self.on_reflex("alert", params)
 
-    def _handle_face_track(self, state: dict):
-        """头部跟随人脸 X 位置。"""
-        if not state["face_present"] or not self.on_face_track:
+    def _check_shy(self, state: dict, now: float):
+        global _shy_approach_start
+
+        if not state["face_present"]:
+            _shy_approach_start = 0.0
             return
-        # face_x: 0.0（最左）→ 0.5（中）→ 1.0（最右）
-        # 映射到 yaw: 70°（左）→ 90°（中）→ 110°（右）
-        yaw = int(70 + state["face_x"] * 40)
-        yaw = max(70, min(110, yaw))
-        self.on_face_track(yaw)
 
-    # ─────────────────────────────────────────
-    # 反射检测
-    # ─────────────────────────────────────────
-
-    def _check_reflexes(self, state: dict):
-        now = time.time()
-
-        # ── Alert：突发声音 ────────────────────────────────
-        # audio_spike 由 audio_detector 写入，检测到拍桌子/突然巨响时为 True
-        if state.get("audio_spike", False):
-            self._trigger_reflex("alert", now)
-
-        # ── Shy：人脸视在大小迅速增大（人快速靠近）────────────────────
-        # 用 face_size (bbox.width) 作为距离代理
-        # 正常工作거离: face_size 大约 0.15~0.30
-        # 靠近: face_size > 0.40 或者比基平线大出很多
         face_size = state.get("face_size", 0.0)
-        if state.get("face_present", False) and face_size > 0:
-            self._face_size_history.append(face_size)
 
-            # 基平线 = 最近历史帧的均值（不包括最新帧）
-            if len(self._face_size_history) >= 10:
-                baseline = sum(list(self._face_size_history)[:-3]) / max(1, len(self._face_size_history) - 3)
-                delta    = face_size - baseline
+        # 判断是否"突然靠近"：
+        # 1. 脸部大小明显超过当前基线
+        # 2. 脸部大小超过绝对阈值（确认真的很近）
+        is_approaching = (
+            face_size > _face_size_baseline + SHY_SIZE_DELTA and
+            face_size > SHY_SIZE_MIN
+        )
 
-                # 大小超过绝对阈值 或 快速增大了很多
-                is_close = (face_size > SHY_SIZE_THRESHOLD) or (delta > SHY_MIN_DELTA)
-
-                if is_close:
-                    self._shy_frame_count += 1
-                    if self._shy_frame_count >= SHY_TRIGGER_FRAMES:
-                        self._trigger_reflex("shy", now)
-                        self._shy_frame_count = 0
-                else:
-                    self._shy_frame_count = 0
+        if is_approaching:
+            if _shy_approach_start == 0.0:
+                _shy_approach_start = now
+                print(f"[REALTIME] 😳 Shy: 检测到靠近 "
+                      f"size={face_size:.2f} baseline={_face_size_baseline:.2f}")
+            elif now - _shy_approach_start >= SHY_SUSTAIN_SEC:
+                if now - _last_reflex_time["shy"] > COOLDOWNS["shy"]:
+                    _last_reflex_time["shy"] = now
+                    _shy_approach_start = 0.0
+                    params = EMOTION_PARAMS.get("reflex_shy", {})
+                    print("[REALTIME] 😳 Shy triggered!")
+                    if self.on_reflex:
+                        self.on_reflex("shy", params)
         else:
-            self._shy_frame_count = 0
-            # 没有人脸时不记录 size
+            # 脸部没有持续靠近，重置计时
+            if _shy_approach_start != 0.0:
+                _shy_approach_start = 0.0
 
-    def _trigger_reflex(self, name: str, now: float):
-        """触发反射，如果冷却时间还没到则忽略。"""
-        cooldown = COOLDOWNS.get(name, 15)
-        last     = self._last_reflex_time.get(name, 0.0)
-
-        if now - last < cooldown:
-            return  # 还在冷却中
-
-        self._last_reflex_time[name] = now
-        params = EMOTION_PARAMS.get(f"reflex_{name}", {})
-        print(f"[REALTIME] 反射触发：{name}")
-
-        if self.on_reflex:
-            self.on_reflex(name, params)
-
-    def _check_return_recognition(self, state: dict, now: float):
-        """
-        检测用户在长时间离开后返回，触发“认出你了”手势。
-
-        逻辑：
-          - face_present 曾经是 True（展示过至少一次）
-          - face_present 变成 False，开始计时
-          - face_present 重新变成 True，且离开时长 > RETURN_MIN_ABSENCE_SECS
-          → 触发 greeting 反射
-        """
-        face = state.get("face_present", False)
-
-        if face:
-            if not self._face_was_present and self._has_ever_seen_face:
-                # 人脸重新出现（不是第一次）
-                absence_secs = now - self._last_face_seen
-                if absence_secs >= RETURN_MIN_ABSENCE_SECS:
-                    print(f"[REALTIME] 👋 返回识别（离开 {absence_secs:.0f}s）→ greeting")
-                    self._trigger_reflex("greeting", now)
-            self._last_face_seen     = now
-            self._has_ever_seen_face = True
-
-        self._face_was_present = face
