@@ -35,7 +35,20 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
-        if path == '/inject':
+        if path == '/woz':
+            length = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(length)
+            try:
+                data = json.loads(body)
+                active = data.get('active', False)
+                from express.serial_bridge import bridge
+                bridge.set_woz_mode(active)
+                self._json({'ok': True, 'woz_mode': active})
+            except Exception as e:
+                self._json({'ok': False, 'error': str(e)})
+
+                
+        elif path == '/inject':
             # Read body
             length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(length)
@@ -64,10 +77,16 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 
                 if emotion in ['alert', 'shy']:
                     params = get_emotion(f"reflex_{emotion}")
-                    bridge.send_reflex(emotion, params)
+                    if bridge.woz_mode:
+                        bridge._send({"type": "reflex", "name": emotion, **params})
+                    else:
+                        bridge.send_reflex(emotion, params)
                 else:
                     params = get_emotion(emotion)
-                    bridge.send_emotion(params)
+                    if bridge.woz_mode:
+                        bridge.send_emotion_woz(params)
+                    else:
+                        bridge.send_emotion(params)
 
                 print(f"[WEB] 🎛️  Injected emotion: {emotion}")
                 self._json({'ok': True, 'emotion': emotion})

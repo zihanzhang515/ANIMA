@@ -338,7 +338,10 @@
     <!-- Emotion Test Controls -->
     <div style="margin-top: 1.5rem;">
         <div class="panel" style="padding: 1.5rem 2rem;">
-            <h2 class="panel-title" style="margin-bottom: 1rem; font-size: 1.2rem;">🎛️ Emotion Test Controls</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2 class="panel-title" style="margin: 0; font-size: 1.2rem;">🎛️ Emotion Test Controls</h2>
+                <button id="woz-toggle-btn" onclick="toggleWoz()" class="woz-btn">WoZ Mode: OFF</button>
+            </div>
             <div id="inject-status" style="font-size:0.8rem; color: var(--accent-glow); margin-bottom: 1rem; min-height: 1.2em;"></div>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                 <button class="emotion-btn" onclick="inject('relaxed')">😌 Relaxed</button>
@@ -354,7 +357,27 @@
         </div>
     </div>
 
+
+
     <style>
+        .woz-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ccc;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .woz-btn.active {
+            background: rgba(102, 252, 241, 0.2);
+            border-color: var(--accent-glow);
+            color: var(--accent-glow);
+            box-shadow: 0 0 15px rgba(102, 252, 241, 0.4);
+        }
         .emotion-btn {
             background: rgba(102, 252, 241, 0.08);
             border: 1px solid rgba(102, 252, 241, 0.3);
@@ -374,6 +397,37 @@
         }
         .emotion-btn:active {
             transform: translateY(0);
+        }
+        
+        /* Sliders */
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        .custom-slider {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            outline: none;
+        }
+        .custom-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-glow);
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(102, 252, 241, 0.5);
         }
     </style>
 
@@ -559,6 +613,38 @@
             }
             setTimeout(() => statusEl.textContent = '', 3000);
         }
+
+        let wozActive = false;
+        async function toggleWoz() {
+            wozActive = !wozActive;
+            const btn = document.getElementById('woz-toggle-btn');
+            
+            try {
+                const res = await fetch('http://localhost:8080/woz', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({active: wozActive})
+                });
+                const data = await res.json();
+                if (data.ok) {
+                    if (wozActive) {
+                        btn.classList.add('active');
+                        btn.textContent = 'WoZ Mode: ON';
+                    } else {
+                        btn.classList.remove('active');
+                        btn.textContent = 'WoZ Mode: OFF';
+                    }
+                } else {
+                    wozActive = !wozActive; // revert
+                    console.error("Failed to toggle WoZ:", data.error);
+                }
+            } catch(e) {
+                wozActive = !wozActive; // revert
+                console.error("Could not reach server to toggle WoZ");
+            }
+        }
+        
+
     </script>
 </body>
 </html>
