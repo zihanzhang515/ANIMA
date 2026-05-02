@@ -338,9 +338,8 @@
     <!-- Emotion Test Controls -->
     <div style="margin-top: 1.5rem;">
         <div class="panel" style="padding: 1.5rem 2rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                <h2 class="panel-title" style="margin: 0; font-size: 1.2rem;">🎛️ Emotion Test Controls</h2>
-                <button id="woz-toggle-btn" onclick="toggleWoz()" class="woz-btn">WoZ Mode: OFF</button>
+            <div style="margin-bottom: 1rem;">
+                <h2 class="panel-title" style="margin: 0; font-size: 1.2rem;">🎛️ Emotion Override</h2>
             </div>
             <div id="inject-status" style="font-size:0.8rem; color: var(--accent-glow); margin-bottom: 1rem; min-height: 1.2em;"></div>
             <div style="display: flex; flex-wrap: wrap; gap: 10px;">
@@ -360,24 +359,6 @@
 
 
     <style>
-        .woz-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #ccc;
-            padding: 0.5rem 1rem;
-            border-radius: 8px;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.9rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        .woz-btn.active {
-            background: rgba(102, 252, 241, 0.2);
-            border-color: var(--accent-glow);
-            color: var(--accent-glow);
-            box-shadow: 0 0 15px rgba(102, 252, 241, 0.4);
-        }
         .emotion-btn {
             background: rgba(102, 252, 241, 0.08);
             border: 1px solid rgba(102, 252, 241, 0.3);
@@ -464,25 +445,25 @@
         };
 
         let currentActiveEmotion = "";
-        let connectionErrorCount = 0;
+        let stateFailCount = 0;
 
         async function fetchState() {
             try {
-                const response = await fetch('http://localhost:8080/state?t=' + Date.now());
+                const response = await fetch('http://localhost:8080/state?t=' + Date.now(), {signal: AbortSignal.timeout(2000)});
                 if (!response.ok) throw new Error("Network response error");
                 
                 const state = await response.json();
                 
-                // Connection status
+                // Reset fail counter and show connected
+                stateFailCount = 0;
                 statusBadge.textContent = "🟢 LIVE SYNC";
                 statusBadge.style.borderColor = "var(--accent-glow)";
                 statusBadge.style.color = "var(--accent-glow)";
-                connectionErrorCount = 0;
 
                 updateUI(state);
             } catch (err) {
-                connectionErrorCount++;
-                if (connectionErrorCount > 2) {
+                stateFailCount++;
+                if (stateFailCount >= 2) {
                     statusBadge.textContent = "🔴 DISCONNECTED";
                     statusBadge.style.borderColor = "#ff4081";
                     statusBadge.style.color = "#ff4081";
@@ -614,36 +595,7 @@
             setTimeout(() => statusEl.textContent = '', 3000);
         }
 
-        let wozActive = false;
-        async function toggleWoz() {
-            wozActive = !wozActive;
-            const btn = document.getElementById('woz-toggle-btn');
-            
-            try {
-                const res = await fetch('http://localhost:8080/woz', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({active: wozActive})
-                });
-                const data = await res.json();
-                if (data.ok) {
-                    if (wozActive) {
-                        btn.classList.add('active');
-                        btn.textContent = 'WoZ Mode: ON';
-                    } else {
-                        btn.classList.remove('active');
-                        btn.textContent = 'WoZ Mode: OFF';
-                    }
-                } else {
-                    wozActive = !wozActive; // revert
-                    console.error("Failed to toggle WoZ:", data.error);
-                }
-            } catch(e) {
-                wozActive = !wozActive; // revert
-                console.error("Could not reach server to toggle WoZ");
-            }
-        }
-        
+
 
     </script>
 </body>

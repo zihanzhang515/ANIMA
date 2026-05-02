@@ -61,10 +61,24 @@ class RealtimePipeline:
             target=self._run, daemon=True, name="RealtimePipeline"
         )
         thread.start()
+        # ← 加这个 idle 线程
+        idle_thread = threading.Thread(
+            target=self._idle_loop, daemon=True, name="IdleScheduler"
+        )
+        idle_thread.start()
+    
         print("[REALTIME] Pipeline started.")
         print(f"[REALTIME] Shy: 脸部需比基线大 {SHY_SIZE_DELTA:.0%}，"
               f"且大于 {SHY_SIZE_MIN:.0%}，持续 {SHY_SUSTAIN_SEC}s")
         return thread
+    
+    def _idle_loop(self):
+        """每 8-20 秒向 Arduino 发送 idle 命令"""
+        while not self._stop_event.is_set():
+            wait_time = random.uniform(8, 20)
+            self._stop_event.wait(timeout=wait_time)
+            if not self._stop_event.is_set() and self.on_idle:
+                self.on_idle()
 
     def stop(self):
         self._stop_event.set()

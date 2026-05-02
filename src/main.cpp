@@ -8,8 +8,8 @@
 #define PIN_HEAD_YAW   9
 #define PIN_HEAD_PITCH 10
 #define PIN_LED        6
-#define NUM_LEDS       12
-#define LED_BRIGHTNESS 100
+#define NUM_LEDS       24
+#define LED_BRIGHTNESS 70
 
 // ─── 校准后的物理限制（2026-05-01）────────────────────────────
 // Yaw:   60° = 正前方，0-180° 全范围
@@ -25,7 +25,7 @@
 
 int pitchMin  = 0;    // 抬头极限
 int pitchMax  = 40;   // 低头极限
-int basePitch = 20;   // 水平中立
+int basePitch = 25 ;   // 水平中立
 
 #define SPEED_FAST       600
 #define SPEED_MEDIUM    1500

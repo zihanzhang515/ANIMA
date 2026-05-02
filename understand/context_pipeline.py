@@ -120,7 +120,7 @@ class ContextPipeline:
               f"was_active={was_active}")
 
         # ── 第一步：基础规则匹配 ──
-        new_emotion, new_scenario = match_context(current, previous)
+        new_emotion, new_scenario = match_context(current, previous, inactive_secs)
 
         # ── 第二步：时间维度覆盖逻辑 ──
         new_emotion, new_scenario = self._apply_time_overrides(
@@ -225,9 +225,11 @@ class ContextPipeline:
             self._pending_count   = 0
             print(f"[UNDERSTAND] 情绪不变：{self.current_emotion}")
 
-        # ALWAYS update the public state so Web UI can see it even on late connect
+        # 更新 shared_state，网页轮询使用
         shared_state.update("current_emotion", self.current_emotion)
         shared_state.save_snapshot()
+
+
 
     # ─────────────────────────────────────────
     # 时间维度覆盖

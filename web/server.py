@@ -2,21 +2,21 @@ import sys
 import os
 import json
 import threading
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
 
 # Add project root to sys.path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
 from sense.sensor_state import shared_state
 
-# External pipeline reference—set by main.py after creating context_pipeline
-context_pipeline_ref = None
+# Pipeline references set by main.py
+context_pipeline_ref  = None
+realtime_pipeline_ref = None
 
 
 class DashboardHandler(SimpleHTTPRequestHandler):
     def log_message(self, format, *args):
-        # Suppress request log spam
-        pass
+        pass  # Suppress request log spam
 
     def do_OPTIONS(self):
         self.send_response(200)
@@ -28,70 +28,59 @@ class DashboardHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path == '/state':
-            state = shared_state.get()
-            self._json(state)
+            self._json(shared_state.get())
         else:
             super().do_GET()
 
     def do_POST(self):
         path = urlparse(self.path).path
-        if path == '/woz':
-            length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(length)
-            try:
-                data = json.loads(body)
-                active = data.get('active', False)
-                from express.serial_bridge import bridge
-                bridge.set_woz_mode(active)
-                self._json({'ok': True, 'woz_mode': active})
-            except Exception as e:
-                self._json({'ok': False, 'error': str(e)})
 
-                
-        elif path == '/inject':
-            # Read body
+        if path == '/inject':
             length = int(self.headers.get('Content-Length', 0))
-            body = self.rfile.read(length)
+            body   = self.rfile.read(length)
             try:
-                data = json.loads(body)
+                data    = json.loads(body)
                 emotion = data.get('emotion', '').lower()
-                VALID = {'relaxed', 'happy', 'focus', 'curious', 'confused',
-                         'tired', 'listen', 'shy', 'alert'}
+                VALID   = {'relaxed', 'happy', 'focus', 'curious', 'confused',
+                           'tired', 'listen', 'shy', 'alert'}
                 if emotion not in VALID:
                     self._json({'ok': False, 'error': f'Unknown emotion: {emotion}'})
                     return
 
-                # Force emotion into shared state
-                shared_state.update('current_emotion', emotion)
-
-                # Also patch the pipeline's internal state so min-hold doesn't block
-                if context_pipeline_ref is not None:
-                    context_pipeline_ref.current_emotion = emotion
-                    import time
-                    # Reset hold timer so it can switch away immediately
-                    context_pipeline_ref.emotion_entered_at = time.time() - 999
-
-                # Send hardware command to Arduino
                 from express.serial_bridge import bridge
                 from config.emotions import get_emotion
-                
-                if emotion in ['alert', 'shy']:
-                    params = get_emotion(f"reflex_{emotion}")
-                    if bridge.woz_mode:
-                        bridge._send({"type": "reflex", "name": emotion, **params})
-                    else:
-                        bridge.send_reflex(emotion, params)
+
+                # ── 1. shared_state（网页显示用）──────────────────────
+                shared_state.force_update('current_emotion', emotion)
+
+                # ── 2. 同步 context_pipeline（重置 hold timer）────────
+                if context_pipeline_ref is not None:
+                    import time as _t
+                    context_pipeline_ref.current_emotion    = emotion
+                    context_pipeline_ref.emotion_entered_at = _t.time() - 999
+
+                # ── 3. 同步 realtime_pipeline（防止 idle 覆盖）────────
+                if realtime_pipeline_ref is not None:
+                    realtime_pipeline_ref.set_emotion(emotion)
+
+                # ── 4. 发送 Arduino 指令 ──────────────────────────────
+                if emotion in ('alert', 'shy'):
+                    params = get_emotion(emotion)
+                    params['name'] = emotion
+                    bridge._send({"type": "reflex", "name": emotion, **params})
                 else:
                     params = get_emotion(emotion)
-                    if bridge.woz_mode:
-                        bridge.send_emotion_woz(params)
-                    else:
-                        bridge.send_emotion(params)
+                    params['name'] = emotion
+                    bridge.send_emotion(params)
 
-                print(f"[WEB] 🎛️  Injected emotion: {emotion}")
+                print(f"[WEB] 🎛️  Inject: {emotion}")
                 self._json({'ok': True, 'emotion': emotion})
+
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 self._json({'ok': False, 'error': str(e)})
+
         else:
             self.send_response(404)
             self.end_headers()
@@ -107,13 +96,13 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
 _httpd_instance = None
 
+
 def run_server():
     global _httpd_instance
     web_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(web_dir)
-    server_address = ('', 8080)
-    HTTPServer.allow_reuse_address = True
-    _httpd_instance = HTTPServer(server_address, DashboardHandler)
+    ThreadingHTTPServer.allow_reuse_address = True
+    _httpd_instance = ThreadingHTTPServer(('', 8080), DashboardHandler)
     print("🌐 [WEB] Dashboard → http://localhost:8080")
     _httpd_instance.serve_forever()
 
@@ -125,9 +114,10 @@ def stop_dashboard():
         _httpd_instance = None
 
 
-def start_dashboard(pipeline=None):
-    global context_pipeline_ref
-    context_pipeline_ref = pipeline
+def start_dashboard(pipeline=None, realtime_pipeline=None):
+    global context_pipeline_ref, realtime_pipeline_ref
+    context_pipeline_ref  = pipeline
+    realtime_pipeline_ref = realtime_pipeline
     thread = threading.Thread(target=run_server, daemon=True, name="DashboardServer")
     thread.start()
     return thread
@@ -135,7 +125,6 @@ def start_dashboard(pipeline=None):
 
 if __name__ == "__main__":
     start_dashboard()
-    print("Press Ctrl+C to stop.")
     import time
     while True:
         time.sleep(1)

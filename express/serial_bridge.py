@@ -1,101 +1,124 @@
 """
-express/serial_bridge.py — 加入 WoZ 模式
-─────────────────────────────────────────
-WoZ 模式下：
-  - context_pipeline 的情绪输出被屏蔽
-  - 情绪由 dashboard 或 woz_controller 手动发送
-  - idle 照常运行（Arduino 端自动执行）
-  - 下次切换情绪或手动解锁才退出 WoZ 模式
+express/serial_bridge.py
 """
 
-import serial
-import serial.tools.list_ports
 import json
 import time
 import threading
 
+try:
+    import serial
+    import serial.tools.list_ports
+    SERIAL_AVAILABLE = True
+except ImportError:
+    SERIAL_AVAILABLE = False
+    print("[EXPRESS] WARNING: pyserial not installed.")
+
 
 class SerialBridge:
-    def __init__(self):
+    def __init__(self, port: str = None, baud: int = 9600):
+        self.port = port
+        self.baud = baud
         self._serial = None
-        self._lock   = threading.Lock()
-        self.woz_mode       = False   # WoZ 锁定标志
+        self._lock = threading.Lock()
+        self._connected = False
+        self._simulation_mode = not SERIAL_AVAILABLE
         self.current_emotion = "relaxed"
 
-    # ─── 连接 ─────────────────────────────────────────────────
-    def connect(self, port: str = None, baud: int = 9600):
-        if port is None:
-            port = self._find_port()
-        self._serial = serial.Serial(port, baud, timeout=2)
-        time.sleep(2)
-        print(f"[BRIDGE] Connected: {port}")
+    def connect(self) -> bool:
+        if self._simulation_mode:
+            print("[EXPRESS] Simulation mode - no hardware connected")
+            self._connected = True
+            return True
 
-    def disconnect(self):
-        if self._serial and self._serial.is_open:
-            self._serial.close()
-            print("[BRIDGE] Disconnected.")
+        if self.port is None:
+            self.port = self._auto_detect_port()
+            if self.port is None:
+                print("[EXPRESS] No Arduino found. Running in simulation mode.")
+                self._simulation_mode = True
+                self._connected = True
+                return True
 
-    def _find_port(self) -> str:
+        try:
+            self._serial = serial.Serial(self.port, self.baud, timeout=1)
+            time.sleep(2)
+            self._connected = True
+            print(f"[EXPRESS] Connected to Arduino on {self.port}")
+            return True
+        except Exception as e:
+            print(f"[EXPRESS] Failed to connect: {e}. Running in simulation mode.")
+            self._simulation_mode = True
+            self._connected = True
+            return True
+
+    # ─── 情绪发送（供 context_pipeline 和 dashboard inject 调用）──
+    def send_emotion(self, params: dict):
+        self.current_emotion = params.get("name", "relaxed")
+        cmd = {
+            "type":  "emotion",
+            "name":  params.get("name",  "relaxed"),
+            "ear":   params.get("ear",   0),
+            "yaw":   params.get("yaw",   60),
+            "pitch": params.get("pitch", 20),
+            "r":     params.get("r",     255),
+            "g":     params.get("g",     245),
+            "b":     params.get("b",     224),
+        }
+        self._send(cmd)
+
+    # ─── 面部追踪 ──────────────────────────────────────────────
+    def send_track(self, yaw: int):
+        face_x = (yaw - 20) / 80.0
+        self._send({"type": "track", "face_x": face_x, "yaw": yaw})
+
+    # ─── 反射动作 ──────────────────────────────────────────────
+    def send_reflex(self, reflex_name: str, params: dict):
+        cmd = {
+            "type": "reflex",
+            "name": reflex_name,
+            "ear":  params.get("ear", 0),
+            "r":    params.get("r", 0),
+            "g":    params.get("g", 255),
+            "b":    params.get("b", 255),
+        }
+        self._send(cmd)
+
+    # ─── Idle 动作 ─────────────────────────────────────────────
+    def send_idle(self, *args):
+        self._send({"type": "idle"})
+
+    # ─── 底层串口发送 ──────────────────────────────────────────
+    def _send(self, cmd: dict):
+        json_str = json.dumps(cmd) + "\n"
+        if self._simulation_mode:
+            print(f"[EXPRESS] SIM → {json_str.strip()}")
+            return
+        if self._serial is None:
+            print(f"[EXPRESS] ERROR: serial not connected, dropping: {json_str.strip()}")
+            return
+        with self._lock:
+            try:
+                self._serial.write(json_str.encode("utf-8"))
+                print(f"[EXPRESS] TX → {json_str.strip()}")
+            except Exception as e:
+                print(f"[EXPRESS] Send error: {e}")
+
+    def _auto_detect_port(self):
+        if not SERIAL_AVAILABLE:
+            return None
         for p in serial.tools.list_ports.comports():
-            if any(x in p.description for x in ["Arduino", "usbmodem", "usbserial", "CH340"]):
+            search_string = f"{p.description} {p.device}".lower()
+            if any(x in search_string for x in ["arduino", "usbmodem", "usbserial", "ch340"]):
                 return p.device
         ports = list(serial.tools.list_ports.comports())
         if ports:
             return ports[0].device
-        raise RuntimeError("[BRIDGE] No serial port found.")
+        return None
 
-    # ─── 基础发送 ─────────────────────────────────────────────
-    def _send(self, cmd: dict):
+    def disconnect(self):
         if self._serial and self._serial.is_open:
-            with self._lock:
-                msg = json.dumps(cmd) + "\n"
-                self._serial.write(msg.encode())
-
-    # ─── 情绪发送 ─────────────────────────────────────────────
-    def send_emotion(self, params: dict):
-        """从 context_pipeline 调用 — WoZ 模式下被屏蔽"""
-        if self.woz_mode:
-            return  # ← WoZ 锁定，忽略 pipeline 的情绪输出
-        self.current_emotion = params.get("name", "relaxed")
-        self._send({"type": "emotion", **params})
-
-    def send_emotion_woz(self, params: dict):
-        """从 WoZ dashboard 调用 — 绕过锁定直接发送"""
-        self.woz_mode = True
-        self.current_emotion = params.get("name", "relaxed")
-        self._send({"type": "emotion", **params})
-        print(f"[BRIDGE][WoZ] Emotion → {self.current_emotion}")
-
-    # ─── WoZ 控制 ─────────────────────────────────────────────
-    def set_woz_mode(self, active: bool):
-        self.woz_mode = active
-        state = "ON" if active else "OFF"
-        print(f"[BRIDGE] WoZ mode {state}")
-        if not active:
-            # 解锁时回到 Relaxed
-            self._send({"type": "emotion", "name": "relaxed",
-                        "r": 255, "g": 245, "b": 224})
-            self.current_emotion = "relaxed"
-
-    # ─── 其他命令 ─────────────────────────────────────────────
-    def send_track(self, yaw: int):
-        self._send({"type": "track", "yaw": yaw})
-
-    def send_reflex(self, name: str, params: dict):
-        if self.woz_mode:
-            return  # WoZ 模式下同样屏蔽 reflex
-        self._send({"type": "reflex", "name": name, **params})
-
-    def send_idle(self, *args):
-        self._send({"type": "idle"})
-
-    def send_calibrate(self, base_pitch: int, min_pitch: int, max_pitch: int):
-        self._send({
-            "type": "calibrate",
-            "base_pitch": base_pitch,
-            "min_pitch": min_pitch,
-            "max_pitch": max_pitch
-        })
+            self._serial.close()
+        print("[EXPRESS] Disconnected.")
 
 
 bridge = SerialBridge()

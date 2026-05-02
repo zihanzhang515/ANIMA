@@ -48,8 +48,13 @@ def main():
     context_pipeline = ContextPipeline(on_emotion_change=on_emotion_change)
 
     # ── Sense 线程 ──────────────────────────────────────────
+    face_tracker_thread = threading.Thread(
+        target=run_face_tracker, args=(stop_event,),
+        daemon=False,  # non-daemon: ensures cap.release() is called on exit
+        name="FaceTracker"
+    )
     threads = [
-        threading.Thread(target=run_face_tracker,  args=(stop_event,), daemon=True, name="FaceTracker"),
+        face_tracker_thread,
         threading.Thread(target=run_audio_detector, args=(stop_event,), daemon=True, name="AudioDetector"),
         threading.Thread(target=run_input_monitor,  args=(stop_event,), daemon=True, name="InputMonitor"),
     ]
@@ -60,7 +65,7 @@ def main():
 
     # ── Start Web Dashboard ────────────────────────────────
     from web.server import start_dashboard
-    start_dashboard(pipeline=context_pipeline)
+    start_dashboard(pipeline=context_pipeline, realtime_pipeline=realtime_pipeline)
 
     print("\n[MAIN] ANIMA running. Press Ctrl+C to stop.\n")
 
@@ -73,8 +78,9 @@ def main():
         context_pipeline.stop()
         realtime_pipeline.stop()
         bridge.disconnect()
-        time.sleep(1)
+        face_tracker_thread.join(timeout=3)  # 等摄像头释放
         print("[MAIN] Goodbye.")
+
 
 
 if __name__ == "__main__":
