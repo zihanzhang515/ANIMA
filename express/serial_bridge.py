@@ -101,7 +101,11 @@ class SerialBridge:
                 self._serial.write(json_str.encode("utf-8"))
                 print(f"[EXPRESS] TX → {json_str.strip()}")
             except Exception as e:
-                print(f"[EXPRESS] Send error: {e}")
+                print(f"[EXPRESS] Send error: {e} → switching to simulation mode")
+                # 串口中途断开（如 Arduino USB 拔掉），切换到模拟模式，避免抛异常
+                self._simulation_mode = True
+                self._serial = None
+                print(f"[EXPRESS] SIM → {json_str.strip()}")
 
     def _auto_detect_port(self):
         if not SERIAL_AVAILABLE:

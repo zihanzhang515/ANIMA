@@ -65,12 +65,11 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
                 # ── 4. 发送 Arduino 指令 ──────────────────────────────
                 if emotion in ('alert', 'shy'):
-                    params = get_emotion(emotion)
-                    params['name'] = emotion
-                    bridge._send({"type": "reflex", "name": emotion, **params})
+                    # 使用正确的 reflex_ 前缀 key 获取反射参数
+                    params = get_emotion(f'reflex_{emotion}')
+                    bridge.send_reflex(emotion, params)
                 else:
                     params = get_emotion(emotion)
-                    params['name'] = emotion
                     bridge.send_emotion(params)
 
                 print(f"[WEB] 🎛️  Inject: {emotion}")
@@ -78,8 +77,9 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
             except Exception as e:
                 import traceback
+                tb = traceback.format_exc()
                 traceback.print_exc()
-                self._json({'ok': False, 'error': str(e)})
+                self._json({'ok': False, 'error': str(e), 'traceback': tb})
 
         else:
             self.send_response(404)
