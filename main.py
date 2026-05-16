@@ -41,7 +41,7 @@ def main():
     def on_emotion_change(emotion_name: str, scenario: str, params: dict):
         print(f"\n[MAIN] ✨ Emotion → {emotion_name} ({scenario})")
         # 同步情绪状态到 realtime_pipeline（用于 idle 调度和 tracking 控制）
-        realtime_pipeline.set_emotion(emotion_name)
+        
         # 发送情绪命令
         bridge.send_emotion(params)
 

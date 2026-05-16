@@ -59,7 +59,7 @@ EMOTION_PARAMS = {
         "ear":          110,    # 大幅折后
         "yaw":          60,
         "pitch_offset": 15,     # 35°（低头，接近极限）
-        "r": 160, "g": 90, "b": 0,
+        "r": 120, "g": 70, "b": 0,   # 暗黄色（欲警）
     },
 
     "confused": {
@@ -87,7 +87,7 @@ EMOTION_PARAMS = {
         "ear":          0,
         "yaw":          60,
         "pitch_offset": -5,     # 微抬头
-        "r": 0, "g": 255, "b": 255,
+        "r": 30, "g": 200, "b": 80,  # 偏绿但不如 listen 那么鲜绿
         "cooldown_sec": 8,
         "scan_left":  20,       # 扫描到 20°
         "scan_right": 100,      # 扫描到 100°

@@ -18,6 +18,7 @@ from sense.sensor_state import shared_state
 from config.emotions import EMOTION_PARAMS
 
 REALTIME_INTERVAL = 0.05
+YAW_CENTER = 60   # 与 Arduino 保持一致
 
 IDLE_MIN_SEC = 8
 IDLE_MAX_SEC = 20
@@ -81,7 +82,8 @@ class RealtimePipeline:
             # ── Face tracking（仅 listen/curious）────────────
             if state["face_present"] and self.on_face_track:
                 if self.current_emotion in TRACKING_EMOTIONS:
-                    yaw = int(40 + state["face_x"] * 40)
+                    # 直接发原始 face_x，Arduino 内部做镜像
+                    yaw = int(YAW_CENTER - 35 + state["face_x"] * 70)  # 25~95
                     yaw = max(20, min(100, yaw))
                     self.on_face_track(yaw)
 
@@ -93,6 +95,11 @@ class RealtimePipeline:
                 )
 
 
+
+            # ── Idle 调度 ─────────────────────────────────────
+            if now >= self._next_idle_time and self.on_idle:
+                self.on_idle()
+                self._next_idle_time = now + random.uniform(IDLE_MIN_SEC, IDLE_MAX_SEC)
 
             # ── 反射检测 ─────────────────────────────────────
             if self.current_emotion not in NO_REFLEX_EMOTIONS:

@@ -35,7 +35,7 @@ int basePitch = 25 ;   // 水平中立
 Servo earLeft, earRight, headYaw, headPitch;
 CRGB leds[NUM_LEDS];
 
-int curEar = 0, curYaw = YAW_CENTER, curPitch = 0;
+int curEar = 0, curEarL = 0, curEarR = 0, curYaw = YAW_CENTER, curPitch = 0;
 int curR = 255, curG = 245, curB = 224;
 char currentEmotion[20] = "relaxed";
 bool busyMoving = false;
@@ -50,29 +50,62 @@ int clampYaw(int v)        { return constrain(v, YAW_MIN, YAW_MAX); }
 int clampPitch(int v)      { return constrain(v, pitchMin, pitchMax); }
 int clampEar(int v)        { return constrain(v, EAR_MIN, EAR_MAX); }
 
+// 统一写入（对称耳朵）
 void writeAll(int ear, int yaw, int pitch) {
   earLeft.write(leftEarPhysical(ear));
   earRight.write(clampEar(ear));
   headYaw.write(clampYaw(yaw));
   headPitch.write(clampPitch(pitch));
+  curEarL = ear; curEarR = ear;
+}
+
+// 独立写入左右耳
+void writeAllAsym(int eL, int eR, int yaw, int pitch) {
+  earLeft.write(leftEarPhysical(eL));
+  earRight.write(clampEar(eR));
+  headYaw.write(clampYaw(yaw));
+  headPitch.write(clampPitch(pitch));
+  curEarL = eL; curEarR = eR;
 }
 
 float sineEaseOut(float t) { return sin(t * (PI / 2.0)); }
 
+// 对称耳朵平滑运动（从当前位置连续插值，不强制回中立）
 void smoothMove(int tE, int tY, int tP, int dMs) {
   tE = clampEar(tE); tY = clampYaw(tY); tP = clampPitch(tP);
   int sE = curEar, sY = curYaw, sP = curPitch;
   int steps = max(1, dMs / 16);
   for (int i = 1; i <= steps; i++) {
     float e = sineEaseOut((float)i / steps);
-    earLeft.write(leftEarPhysical(sE + (int)((tE-sE)*e)));
-    earRight.write(clampEar(sE + (int)((tE-sE)*e)));
+    int nowE = sE + (int)((tE-sE)*e);
+    earLeft.write(leftEarPhysical(nowE));
+    earRight.write(clampEar(nowE));
     headYaw.write(clampYaw(sY + (int)((tY-sY)*e)));
     headPitch.write(clampPitch(sP + (int)((tP-sP)*e)));
     delay(16);
   }
-  curEar = tE; curYaw = tY; curPitch = tP;
+  curEar = tE; curEarL = tE; curEarR = tE;
+  curYaw = tY; curPitch = tP;
   writeAll(curEar, curYaw, curPitch);
+}
+
+// 不对称耳朵平滑运动（左右耳独立目标，从当前位置连续插值）
+void smoothMoveAsym(int tEL, int tER, int tY, int tP, int dMs) {
+  tEL = clampEar(tEL); tER = clampEar(tER);
+  tY = clampYaw(tY); tP = clampPitch(tP);
+  int sEL = curEarL, sER = curEarR, sY = curYaw, sP = curPitch;
+  int steps = max(1, dMs / 16);
+  for (int i = 1; i <= steps; i++) {
+    float e = sineEaseOut((float)i / steps);
+    earLeft.write(leftEarPhysical(sEL + (int)((tEL-sEL)*e)));
+    earRight.write(clampEar(sER + (int)((tER-sER)*e)));
+    headYaw.write(clampYaw(sY + (int)((tY-sY)*e)));
+    headPitch.write(clampPitch(sP + (int)((tP-sP)*e)));
+    delay(16);
+  }
+  curEarL = tEL; curEarR = tER; curEar = (tEL + tER) / 2;
+  curYaw = tY; curPitch = tP;
+  writeAllAsym(curEarL, curEarR, curYaw, curPitch);
 }
 
 void setLight(int r, int g, int b) {
@@ -88,112 +121,147 @@ void enterRelaxed() {
 }
 
 void enterCurious() {
-  // 侧转向左（YAW_CENTER - 15 = 45°），微微抬头（basePitch - 5 = 15°）
-  smoothMove(0, 45, basePitch - 5, SPEED_FAST);
+  // 耳朵在转头时明显往后折 55°，再远头的扫视动作
+  smoothMoveAsym(55, 55, YAW_CENTER - 25, basePitch - 5, SPEED_MEDIUM); // 耳朵明显后折 + 左转
+  delay(180);
+  smoothMoveAsym(55, 55, YAW_CENTER + 20, basePitch - 5, SPEED_MEDIUM); // 耳朵保持后折 + 右转
+  delay(150);
+  smoothMoveAsym(40, 40, YAW_CENTER - 15, basePitch - 5, SPEED_MEDIUM); // 安定在左偄，耳朵出40°
 }
 
 void enterHappy() {
-  // 耳朵快速扇动 3 次，头部在 CENTER ±8°（52°↔68°）内摆动
+  // 直接从当前位置做耳朵快速扇动，头在 CENTER ±8° 摆动
+  // （去掉了之前的预先平滑到中立位的动作，不再有多一个和生涩）
   for (int i = 0; i < 3; i++) {
-    earLeft.write(leftEarPhysical(0));  earRight.write(0);
-    headYaw.write(clampYaw(YAW_CENTER - 8)); delay(130);  // 52°
-    earLeft.write(leftEarPhysical(30)); earRight.write(30);
-    headYaw.write(clampYaw(YAW_CENTER + 8)); delay(130);  // 68°
+    earLeft.write(leftEarPhysical(0));   earRight.write(0);
+    headYaw.write(clampYaw(YAW_CENTER - 8)); delay(120);
+    earLeft.write(leftEarPhysical(18));  earRight.write(18);
+    headYaw.write(clampYaw(YAW_CENTER + 8)); delay(120);
   }
   earLeft.write(leftEarPhysical(0)); earRight.write(0);
   headYaw.write(YAW_CENTER);
-  curEar = 0; curYaw = YAW_CENTER; curPitch = basePitch;
+  curEarL = 0; curEarR = 0; curEar = 0;
+  curYaw = YAW_CENTER; curPitch = basePitch;
 }
 
 void enterFocus() {
-  // 耳朵缓慢折后 90°，头部锁在中心
+  // 耳朵极缓慢折后 90°（VERY_SLOW），头部锁在中心，从当前位置连续过渡
   smoothMove(90, YAW_CENTER, basePitch, SPEED_VERY_SLOW);
 }
 
 void enterTired() {
-  // 耳朵大幅折后 110°，低头到接近极限（basePitch + 15 = 35°）
+  // 头和耳朵一起缓慢往下，全程 VERY_SLOW，像疲惫地沉下去
   smoothMove(110, YAW_CENTER, basePitch + 15, SPEED_VERY_SLOW);
   delay(400);
-  // 叹气微动：再沉 2°，但不超过极限
-  headPitch.write(clampPitch(curPitch + 2)); delay(600);
+  // 叹气微动：再沉 2°
+  headPitch.write(clampPitch(curPitch + 2)); delay(800);
   headPitch.write(clampPitch(curPitch));
 }
 
 void enterConfused() {
-  // 先到中位，然后左耳单独折后 80°（右耳保持 0°=朝前），微抬头
-  smoothMove(0, YAW_CENTER, basePitch - 5, SPEED_MEDIUM);
-  delay(150);
-  for (int i = 0; i <= 80; i += 3) {
-    earLeft.write(leftEarPhysical(i)); delay(12);
-  }
-  curEar = 40;
+  // 头微微左转（-10°，表达迷惑/思考）
+  // 左耳朝前展开（ear=0），右耳往后折（ear=70）——不对称表示迷惑
+  smoothMoveAsym(0, 70, YAW_CENTER - 10, basePitch - 3, SPEED_MEDIUM);
 }
 
 void enterListen() {
-  smoothMove(0, YAW_CENTER, basePitch, SPEED_MEDIUM);
+  // 头转向右 15°，耳朵微微挥起朝前（ear 目标为 0，已是最朝前）
+  // 头跟微抬起一点表示专注，如或 pitch -2
+  smoothMoveAsym(0, 0, YAW_CENTER + 15, basePitch - 2, SPEED_MEDIUM);
 }
 
-// ─── Idle 动作（≤800ms，pitch 范围极小只有 ±3-5°）────────────
+// ─── 情绪子定位：反射结束后返回当前持续情绪的最终姿态 ────
+// 不做全部入场动画，只做平滑进入目标位置
+void settleToEmotion() {
+  setLight(curR, curG, curB);
+  if      (!strcmp(currentEmotion, "curious"))  smoothMoveAsym(40, 40, YAW_CENTER - 15, basePitch - 5, SPEED_MEDIUM);
+  else if (!strcmp(currentEmotion, "happy"))    smoothMove(0, YAW_CENTER, basePitch, SPEED_MEDIUM);
+  else if (!strcmp(currentEmotion, "focus"))    smoothMove(90, YAW_CENTER, basePitch, SPEED_SLOW);
+  else if (!strcmp(currentEmotion, "tired"))    smoothMove(110, YAW_CENTER, basePitch + 15, SPEED_SLOW);
+  else if (!strcmp(currentEmotion, "confused")) smoothMoveAsym(0, 70, YAW_CENTER - 10, basePitch - 3, SPEED_MEDIUM);
+  else if (!strcmp(currentEmotion, "listen"))   smoothMoveAsym(0, 0, YAW_CENTER + 15, basePitch - 2, SPEED_MEDIUM);
+  else                                          smoothMove(0, YAW_CENTER, basePitch, SPEED_MEDIUM); // relaxed
+}
+
+// ─── Idle 动作（幇轻微小幅度，更慢更自然）──────────────
 
 void idleRelaxed() {
-  // Yaw ±4°（56-64°），Pitch ±2°（18-22°，在 0-40 范围内安全）
-  int dy = random(-4, 5);
-  int dp = random(-2, 3);
+  // 小幅度呼吸感 + 耳朵轻微抗动
+  int dy = random(-2, 3);
+  int dp = random(-1, 2);
+  int de = random(0, 7);   // 耳朵微当 0°~6°微动
   smoothMove(
-    clampEar(random(-2, 3)),
+    clampEar(de),
     clampYaw(YAW_CENTER + dy),
     clampPitch(basePitch + dp),
-    800
+    1200
   );
 }
 
 void idleCurious() {
-  // 在 45° 侧头基础上 ±4°（41-49°）
-  int newYaw = clampYaw(45 + random(-4, 5));
-  int startY = curYaw, steps = 30;
+  // 在当前中心小幅度左右微动（±3°）
+  int newYaw = clampYaw(curYaw + random(-3, 4));
+  int startY = curYaw, steps = 50;  // 加长 steps 使动作更缓
   for (int i = 1; i <= steps; i++) {
     headYaw.write(clampYaw(startY + (int)((newYaw-startY)*sineEaseOut((float)i/steps))));
-    delay(16);
+    delay(18);
   }
   curYaw = newYaw;
 }
 
 void idleHappy() {
-  earLeft.write(leftEarPhysical(0));  earRight.write(0);  delay(80);
-  earLeft.write(leftEarPhysical(25)); earRight.write(25); delay(100);
-  earLeft.write(leftEarPhysical(0));  earRight.write(0);  delay(80);
+  // 耳朵轻微一抟（只动 8°，幗轻轻的一下）
+  earLeft.write(leftEarPhysical(0));  earRight.write(0);  delay(100);
+  earLeft.write(leftEarPhysical(8));  earRight.write(8);  delay(150);
+  earLeft.write(leftEarPhysical(0));  earRight.write(0);  delay(100);
 }
 
 void idleFocus() {
-  // Pitch ±1°，在 0-40 范围内极细微
-  int tp = clampPitch(basePitch + random(-1, 2));
-  int sp = curPitch, steps = 40;
+  // 非常细微的呼吸 Pitch ±1°
+  int tp = clampPitch(curPitch + random(-1, 2));
+  int sp = curPitch, steps = 60;  // 连续更慢
   for (int i = 1; i <= steps; i++) {
     headPitch.write(clampPitch(sp + (int)((tp-sp)*sineEaseOut((float)i/steps))));
-    delay(16);
+    delay(18);
   }
   curPitch = tp;
 }
 
 void idleTired() {
-  // 微沉 2°（受限于 pitchMax=40，所以如果已经是 35° 就只能再沉 2° 到 37°）
-  int sinkP = clampPitch(curPitch + 2);
-  headPitch.write(sinkP); delay(500);
-  headPitch.write(clampPitch(curPitch)); delay(200);
+  // 微微沉一下（只沉 1°，更轻微的叹气感）
+  int sinkP = clampPitch(curPitch + 1);
+  headPitch.write(sinkP); delay(600);
+  headPitch.write(clampPitch(curPitch)); delay(300);
 }
 
 void idleConfused() {
-  for (int i = 0; i <= 12; i += 4) { earRight.write(i); delay(25); }
-  delay(150);
-  for (int i = 12; i >= 0; i -= 4) { earRight.write(i); delay(25); }
+  // 左耳明显往后折 20°，右耳明显往前 20°（相反方向，确保肢体都能看到变化）
+  int steps = 35;
+  for (int i = 1; i <= steps; i++) {
+    float e = sineEaseOut((float)i / steps);
+    // 左耳：从当前 curEarL(=0) 往后折 20°
+    earLeft.write(leftEarPhysical((int)(curEarL + 20 * e)));
+    // 右耳：从当前 curEarR(=70) 往前 20°（数字减小=朝前）
+    earRight.write(clampEar((int)(curEarR - 20 * e)));
+    delay(18);
+  }
+  delay(250);
+  for (int i = steps; i >= 0; i--) {
+    float e = sineEaseOut((float)i / steps);
+    earLeft.write(leftEarPhysical((int)(curEarL + 20 * e)));
+    earRight.write(clampEar((int)(curEarR - 20 * e)));
+    delay(18);
+  }
+  // 保持 curEarL/R 不变（張弝回原始位置）
 }
 
 void idleListen() {
-  int newYaw = clampYaw(YAW_CENTER + random(-4, 5));
-  int startY = curYaw, steps = 30;
+  // 在当前中心小幅度微动（±3°），动作更缓
+  int newYaw = clampYaw(curYaw + random(-3, 4));
+  int startY = curYaw, steps = 50;
   for (int i = 1; i <= steps; i++) {
     headYaw.write(clampYaw(startY + (int)((newYaw-startY)*sineEaseOut((float)i/steps))));
-    delay(16);
+    delay(18);
   }
   curYaw = newYaw;
 }
@@ -214,33 +282,35 @@ void playIdleForCurrentEmotion() {
 // ─── 反射 ────────────────────────────────────────────────────
 void animAlert(int r, int g, int b) {
   busyMoving = true;
+  // 保存反射前的情绪位置，反射结束后精确恢复
+  int savedEarL = curEarL, savedEarR = curEarR;
+  int savedYaw = curYaw, savedPitch = curPitch;
+  int savedR = curR, savedG = curG, savedB = curB;
+
   earLeft.write(leftEarPhysical(0)); earRight.write(0);
-  headPitch.write(clampPitch(basePitch - 5));  // 微抬头（15°）
+  headPitch.write(clampPitch(basePitch - 5));
   setLight(r, g, b);
-  // 扫描：CENTER→左(20°)→右(100°)→回CENTER(60°)
-  for (int y = curYaw; y >= 20; y -= 3)  { headYaw.write(y); delay(12); }
+  // 扫描：当前位置→左(20°)→右(100°)→回 CENTER
+  for (int y = savedYaw; y >= 20; y -= 3)  { headYaw.write(y); delay(12); }
   delay(200);
-  for (int y = 20; y <= 100; y += 3)     { headYaw.write(y); delay(12); }
+  for (int y = 20; y <= 100; y += 3)       { headYaw.write(y); delay(12); }
   delay(200);
   for (int y = 100; y >= YAW_CENTER; y -= 2) { headYaw.write(y); delay(10); }
   curYaw = YAW_CENTER; curPitch = clampPitch(basePitch - 5);
   delay(400);
-  writeAll(curEar, curYaw, curPitch);
-  setLight(curR, curG, curB);
+  // 反射结束——不管之前是什么情绪（包括 shy 等其他反射），都回到当前持续情绪
+  settleToEmotion();
   busyMoving = false;
 }
 
 void animShy(int r, int g, int b) {
   busyMoving = true;
-  setLight(r, g, b);
-  for (int i = 0; i <= 100; i += 4) {
-    earLeft.write(leftEarPhysical(i)); earRight.write(i); delay(8);
-  }
-  // 头转开（向右，YAW_CENTER + 30 = 90°）并低头（basePitch + 10 = 30°）
+  int savedR = curR, savedG = curG, savedB = curB;
+  setLight(255, 0, 0);  // 强制正红
   smoothMove(100, YAW_CENTER + 30, clampPitch(basePitch + 10), SPEED_FAST);
-  delay(1000);
-  writeAll(curEar, curYaw, curPitch);
-  setLight(curR, curG, curB);
+  delay(1200);
+  // 不管之前是什么情绪（包括另一个反射），都回到当前持续情绪的安定位置
+  settleToEmotion();
   busyMoving = false;
 }
 
@@ -257,11 +327,8 @@ void processCommand(const char* json) {
   if (!strcmp(type, "emotion")) {
     const char* name = doc["name"] | "unknown";
     int r = doc["r"]|255, g = doc["g"]|245, b = doc["b"]|224;
-    if (doc.containsKey("ear"))   curEar   = doc["ear"];
-    if (doc.containsKey("yaw"))   curYaw   = doc["yaw"];
-    if (doc.containsKey("pitch")) curPitch = doc["pitch"];
-
-    earLeft.write(leftEarPhysical(0)); earRight.write(0); delay(150);
+    // 不强制回到中立位，保留当前位置作为下一段动画的起点
+    // curEar/curYaw/curPitch 保持不变，enter 函数从这里连续过渡
 
     strncpy(currentEmotion, name, sizeof(currentEmotion)-1);
     Serial.print("EMOTION:"); Serial.println(name);
@@ -280,8 +347,19 @@ void processCommand(const char* json) {
   } else if (!strcmp(type, "track")) {
     if (!busyMoving) {
       if (!strcmp(currentEmotion, "listen") || !strcmp(currentEmotion, "curious")) {
-        // face_x 0-1 → Yaw 20-100°（CENTER ±40°）
-        int yaw = clampYaw(20 + (int)(doc["face_x"].as<float>() * 80));
+        // Listen：镜像追踪——人脸偏左，头转右（镜像）
+        // face_x: 0=左, 1=右 → 镜像后: 0=右, 1=左
+        // 头部范围：CENTER ± 30°（30°~90°），Curious/Listen 各自已有偏移
+        float fx = doc["face_x"].as<float>();
+        float mirrored = 1.0f - fx;  // 镜像
+        int yaw;
+        if (!strcmp(currentEmotion, "listen")) {
+          // Listen 的追踪中心在 YAW_CENTER + 15，镜像范围 ±20°
+          yaw = clampYaw((int)(YAW_CENTER + 15 + (mirrored - 0.5f) * 40));
+        } else {
+          // Curious 的追踪中心在 YAW_CENTER - 10，镜像范围 ±20°
+          yaw = clampYaw((int)(YAW_CENTER - 10 + (mirrored - 0.5f) * 40));
+        }
         headYaw.write(yaw); curYaw = yaw;
       }
     }
