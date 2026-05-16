@@ -64,16 +64,17 @@ CONTEXT_RULES = [
     },
 
     # ── Scenario 2: High Energy ────────────────────────────────
-    # 用户边听音乐/说话边打字：放松愉快的工作节奏
+    # 非常严格：必须在播放音乐（非 speech）且高速打字，持续 30s
+    # 写作 session 中 speech 场景应该是 listen，不是 happy
     {
         "scenario": "High Energy",
         "emotion": "happy",
         "conditions": {
             "face_present": True,
-            "audio_category": ["speech", "music"],
-            "input_rate": ["medium", "high"],
+            "audio_category": "music",   # 只有明确的音乐，不包括 speech
+            "input_rate": "high",        # 必须高速打字，medium 太容易误触
         },
-        "min_duration_sec": 0,
+        "min_duration_sec": 30,          # 持续 30s 才触发
     },
 
     # ── Scenario 3: On a Call ──────────────────────────────────

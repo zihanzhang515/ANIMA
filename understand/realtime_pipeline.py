@@ -37,9 +37,9 @@ NO_REFLEX_EMOTIONS = {"focus", "tired"}
 _face_size_baseline  = 0.15    # 初始估计，运行时会自动校准
 _BASELINE_ALPHA      = 0.02    # 基线更新速度（慢速适应，不被瞬时值影响）
 
-SHY_SIZE_DELTA       = 0.10    # 比基线大这么多才算"突然靠近"
-SHY_SIZE_MIN         = 0.35    # 靠近后脸部至少要这么大才触发
-SHY_SUSTAIN_SEC      = 1.5     # 需要持续靠近 1.5 秒才触发
+SHY_SIZE_DELTA       = 0.08    # 比基线大这么多才算"突然靠近"
+SHY_SIZE_MIN         = 0.25    # 靠近后脸部至少要这么大才触发（原0.35太高）
+SHY_SUSTAIN_SEC      = 1.0     # 需要持续靠近 1.0 秒才触发（原1.5s）
 
 _shy_approach_start  = 0.0     # 开始靠近的时间
 

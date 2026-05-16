@@ -298,7 +298,8 @@ void animAlert(int r, int g, int b) {
   for (int y = 100; y >= YAW_CENTER; y -= 2) { headYaw.write(y); delay(10); }
   curYaw = YAW_CENTER; curPitch = clampPitch(basePitch - 5);
   delay(400);
-  // 反射结束——不管之前是什么情绪（包括 shy 等其他反射），都回到当前持续情绪
+  // 先恢复原来的情绪灯光颜色，再 settle——否则 setLight(curR,curG,curB) 读到的是反射的颜色
+  curR = savedR; curG = savedG; curB = savedB;
   settleToEmotion();
   busyMoving = false;
 }
@@ -309,7 +310,8 @@ void animShy(int r, int g, int b) {
   setLight(255, 0, 0);  // 强制正红
   smoothMove(100, YAW_CENTER + 30, clampPitch(basePitch + 10), SPEED_FAST);
   delay(1200);
-  // 不管之前是什么情绪（包括另一个反射），都回到当前持续情绪的安定位置
+  // 先恢复原来的情绪颜色，再 settle
+  curR = savedR; curG = savedG; curB = savedB;
   settleToEmotion();
   busyMoving = false;
 }

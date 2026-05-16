@@ -15,7 +15,7 @@ import time
 import threading
 import datetime
 from sense.sensor_state import shared_state
-from config.context_rules import match_context
+from config.context_rules_study import CONTEXT_RULES, match_context
 from config.emotions import get_emotion
 
 # ─────────────────────────────────────────
@@ -24,7 +24,7 @@ from config.emotions import get_emotion
 MODE = "test"   # "test" 快速验证  |  "real" 正式使用
 
 if MODE == "test":
-    CHECK_INTERVAL   = 10     # 每10秒评估一次
+    CHECK_INTERVAL   = 7      # 每7秒评估一次（配合 CONFIRM_THRESHOLD=2，需14s确认）
     CURIOUS_WINDOW   = 10     # 归零 <10秒 → Curious
     CONFUSED_WINDOW  = 20     # 归零 >20秒 → Confused
     ACTIVE_LOOKBACK  = 60     # 过去1分钟内有没有高活跃
@@ -52,12 +52,12 @@ class ContextPipeline:
         # 每个情绪的最短持续时间（秒）
         # 在此时间内，即使信号变化也不切换情绪
         self.EMOTION_MIN_HOLD = {
-            "focus":    30,   # test: 降低到30s
-            "happy":    15,   # test: 降低到15s
-            "curious":  10,   # test: 降低到10s
-            "tired":    20,   # tired 至少保持 20s（播完动画）
-            "confused": 15,   # test: 降低到15s
-            "listen":   10,   # test: 降低到10s
+            "focus":    45,   # focus 至少持续 45s，不要一停打字就消失
+            "happy":    30,   # happy 至少持续 30s
+            "curious":  20,   # curious 保持 20s
+            "tired":    30,   # tired 不要太快消失
+            "confused": 30,   # confused 保持 30s
+            "listen":   15,
             "relaxed":  0,
         }
 
@@ -73,7 +73,7 @@ class ContextPipeline:
         self._pending_emotion   = None
         self._pending_scenario  = None
         self._pending_count     = 0
-        self.CONFIRM_THRESHOLD  = 2   # 需要连续 2 次评估（测试模式 20 秒）都认为一样才切换
+        self.CONFIRM_THRESHOLD  = 2   # 需要连续 2 次评估确认，CHECK_INTERVAL=7s，即 14s 内都触发才切换
 
         self._stop_event = threading.Event()
 
@@ -273,7 +273,7 @@ class ContextPipeline:
                 return "relaxed", "Idle Ambient"
                 
         if emotion == "happy":
-            happy_target = 10 if MODE == "test" else 30
+            happy_target = 30 if MODE == "test" else 60
             if active_secs < happy_target:
                 print(f"[UNDERSTAND] 时间拦截：活跃 {active_secs:.0f}s < {happy_target}s，Happy不成立 → 保持 relaxed")
                 return "relaxed", "Idle Ambient"
