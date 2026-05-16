@@ -1,44 +1,45 @@
 """
 config/context_rules_study.py
 ------------------------------
-Study版本的场景规则表
+Study 3 自动版场景规则表（20 分钟 session 压缩阈值）
 
-所有时间阈值按20分钟session压缩。
-生产版本在 context_rules.py（不要改那个）。
+生产版本在 config/context_rules.py，不要改那个。
 
-切换方式：
+切换方式（在 understand/context_pipeline.py 里改一行）：
   from config.context_rules_study import CONTEXT_RULES, match_context
-  替代原来的：
-  from config.context_rules import CONTEXT_RULES, match_context
 
-时间对照：
-  场景              生产版     Study版
-  Deep Focus       600s       60s
-  Stuck/Confused   300s       30s
-  Brief Absence    300s       20s
-  Long Absence     2700s      120s
-  High Energy      0s         0s
-  Late Night       0s         0s（时间条件改为全天）
+情绪触发逻辑重新设计（解决 curious/tired/confused 重叠问题）：
+
+  情绪        核心区分                          触发时机
+  ──────────────────────────────────────────────────────
+  focus      还在高速打字（high input）          专注工作 60s+
+  happy      听音乐/说话同时在打字               有声音环境下活跃
+  listen     有人声，不在打字                    正在通话/开会
+  curious    完全停止打字（low），刚停20~60s      发呆介入
+  confused   完全停止打字（low），超过60s         卡住了
+  tired      还在打字但变慢（medium），持续90s    疲劳减速
+  ──────────────────────────────────────────────────────
+  关键区分：
+    curious / confused  → input = LOW（完全没在打）
+    tired               → input = MEDIUM（还在打，但慢了）
 """
 
 import datetime
 
 # ── 冷却时间（情绪切换后的最短间隔）──────────────────────────
-# 防止同一情绪在短时间内反复触发
 EMOTION_COOLDOWN_SEC = {
-    "focus":    30,   # 生产: 120s
+    "focus":    30,    # 生产: 120s
     "tired":    30,
     "curious":  20,
     "happy":    20,
     "listen":   10,
     "confused": 30,
-    "relaxed":  0,    # relaxed 没有冷却
+    "relaxed":  0,
 }
 
-# ── 情绪持续后回 Relaxed 的超时 ────────────────────────────────
-# 条件消失后等待这么多秒再回 Relaxed
+# ── 条件消失后回 Relaxed 的延迟 ───────────────────────────────
 RETURN_TO_RELAXED_DELAY_SEC = {
-    "focus":    20,   # 生产: 60s
+    "focus":    20,    # 生产: 60s
     "tired":    15,
     "curious":  15,
     "happy":    20,
@@ -49,6 +50,7 @@ RETURN_TO_RELAXED_DELAY_SEC = {
 CONTEXT_RULES = [
 
     # ── Scenario 1: Deep Focus ─────────────────────────────────
+    # 用户专注打字：high input + 安静 + 持续 60s
     {
         "scenario": "Deep Focus",
         "emotion": "focus",
@@ -62,6 +64,7 @@ CONTEXT_RULES = [
     },
 
     # ── Scenario 2: High Energy ────────────────────────────────
+    # 用户边听音乐/说话边打字：放松愉快的工作节奏
     {
         "scenario": "High Energy",
         "emotion": "happy",
@@ -73,22 +76,8 @@ CONTEXT_RULES = [
         "min_duration_sec": 0,
     },
 
-    # ── Scenario 3: Active Break ───────────────────────────────
-    {
-        "scenario": "Active Break",
-        "emotion": "curious",
-        "conditions": {
-            "face_present": True,
-            "input_rate": "low",
-            "speech_active": False,
-        },
-        "requires_transition_from": {
-            "input_rate": ["medium", "high"]
-        },
-        "min_duration_sec": 0,
-    },
-
-    # ── Scenario 4: On a Call ──────────────────────────────────
+    # ── Scenario 3: On a Call ──────────────────────────────────
+    # 用户在通话/会议中：有人声 + 不在打字
     {
         "scenario": "On a Call",
         "emotion": "listen",
@@ -100,39 +89,64 @@ CONTEXT_RULES = [
         "min_duration_sec": 0,
     },
 
-    # ── Scenario 5: Late Night Work ────────────────────────────
-    # Study版本：去掉 hour_range 限制，任何时间都可触发
-    # 改为：持续工作 8 分钟以上 + 打字率 medium/low
+    # ── Scenario 4: Daydreaming / Spacing Out ─────────────────
+    # 用户发呆（刚停下来）：从活跃 → 完全停止打字，20~60s 内
+    # ANIMA 介入，表达好奇："你在想什么呢？"
+    # 注意：max_duration_sec=60，超过60s自动升级为 confused
     {
-        "scenario": "Sustained Work",
-        "emotion": "tired",
+        "scenario": "Daydreaming",
+        "emotion": "curious",
         "conditions": {
             "face_present": True,
-            "input_rate": ["low", "medium"],
+            "input_rate": "low",       # 完全没在打字
+            "speech_active": False,
         },
-        "min_duration_sec": 0,
         "requires_transition_from": {
-            "input_rate": "high"    # 必须从高活跃降下来才触发
+            "input_rate": ["medium", "high"]  # 必须从活跃状态转来
         },
+        "min_duration_sec": 20,        # 发呆 20s 才触发（排除短暂停顿）
+        "max_duration_sec": 60,        # 发呆超 60s → 升级为 confused
     },
 
-    # ── Scenario 6: Stuck ─────────────────────────────────────
+    # ── Scenario 5: Stuck / Confused ──────────────────────────
+    # 用户发呆更久，可能卡住了：same low input，但持续 60s 以上
+    # ANIMA 表现困惑："是遇到什么问题了吗？"
     {
         "scenario": "Stuck",
         "emotion": "confused",
         "conditions": {
             "face_present": True,
-            "input_rate": "low",
+            "input_rate": "low",       # 完全没在打字（同 curious）
             "speech_active": False,
             "audio_category": ["silence", "ambient"],
         },
         "requires_transition_from": {
             "input_rate": ["medium", "high"]
         },
-        "min_duration_sec": 30,      # 生产: 300s
+        "min_duration_sec": 60,        # 发呆 60s 以上才触发
+    },
+
+    # ── Scenario 6: Fatigue / Slowdown ────────────────────────
+    # 用户还在打字但速度明显变慢（medium，不是 low）
+    # 关键区分：curious/confused 是完全不打字，tired 是还在打但疲惫
+    # ANIMA 表现疲惫："你是不是有点累了？"
+    {
+        "scenario": "Fatigue",
+        "emotion": "tired",
+        "conditions": {
+            "face_present": True,
+            "input_rate": "medium",    # 还在打字，但变慢了（不是 low）
+            "speech_active": False,
+            "audio_category": ["silence", "ambient"],
+        },
+        "requires_transition_from": {
+            "input_rate": "high"       # 必须从高速打字降下来
+        },
+        "min_duration_sec": 90,        # 持续变慢 90s（生产: 480s）
     },
 
     # ── Scenario 7: Brief Absence ─────────────────────────────
+    # 用户短暂离开座位：ANIMA 左右张望，等你回来
     {
         "scenario": "Brief Absence",
         "emotion": "curious",
@@ -141,11 +155,12 @@ CONTEXT_RULES = [
             "input_rate": "low",
             "speech_active": False,
         },
-        "min_duration_sec": 20,      # 生产: 300s
-        "max_duration_sec": 120,     # 生产: 2700s
+        "min_duration_sec": 20,        # 生产: 300s
+        "max_duration_sec": 120,
     },
 
     # ── Scenario 8: Long Absence ──────────────────────────────
+    # 用户长时间不在：ANIMA 进入低能耗困倦状态
     {
         "scenario": "Long Absence",
         "emotion": "tired",
@@ -154,7 +169,7 @@ CONTEXT_RULES = [
             "input_rate": "low",
             "speech_active": False,
         },
-        "min_duration_sec": 120,     # 生产: 2700s
+        "min_duration_sec": 120,       # 生产: 2700s
     },
 
     # ── Default ───────────────────────────────────────────────
