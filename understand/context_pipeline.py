@@ -149,11 +149,11 @@ class ContextPipeline:
 
         # ── 同时追加写入 token 日志文件 ──
         try:
-            import os, datetime
+            import os
             log_dir  = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs")
             os.makedirs(log_dir, exist_ok=True)
             log_path = os.path.join(log_dir, "token_log.txt")
-            ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 用文件顶部已 import 的 datetime
             with open(log_path, "a", encoding="utf-8") as lf:
                 lf.write(f"[{ts}] {token}\n")
         except Exception as log_err:
@@ -264,6 +264,19 @@ class ContextPipeline:
                 print(f"[UNDERSTAND] 时间拦截：离开 {absent_secs:.0f}s < {absent_target}s → 保持 relaxed")
                 return "relaxed", "Idle Ambient"
 
+        # ── 覆盖-0.5：主动检测发呵/庄 —— 不依赖 match_context 的结果 ────────
+        # 无论 match_context 返回什么，只要 was_active+input=low，就主动判断 curious/confused
+        if (current["face_present"]
+                and was_active
+                and not current["speech_active"]
+                and current["input_rate"] == "low"):
+            if inactive_secs >= CONFUSED_WINDOW:
+                print(f"[UNDERSTAND] 主动检测：停止活跃 {inactive_secs:.0f}s ≥ {CONFUSED_WINDOW}s → confused")
+                return "confused", "Stuck"
+            elif inactive_secs >= CURIOUS_WINDOW:
+                print(f"[UNDERSTAND] 主动检测：停止活跃 {inactive_secs:.0f}s ≥ {CURIOUS_WINDOW}s → curious")
+                return "curious", "Daydreaming"
+            # inactive_secs < CURIOUS_WINDOW 时不干预，继续走后面逻辑
 
         # ── 覆盖0：Focus 和 Happy 长时间要求 ────────────────
         if emotion == "focus":

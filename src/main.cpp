@@ -173,7 +173,17 @@ void enterListen() {
 // ─── 情绪子定位：反射结束后返回当前持续情绪的最终姿态 ────
 // 不做全部入场动画，只做平滑进入目标位置
 void settleToEmotion() {
-  setLight(curR, curG, curB);
+  // 根据 currentEmotion 字符串直接查颜色——不依赖 curR/G/B（可能被反射污染）
+  int r = 255, g = 245, b = 224;   // 默认 relaxed 暖白
+  if      (!strcmp(currentEmotion, "focus"))    { r=0;   g=0;   b=200; }
+  else if (!strcmp(currentEmotion, "tired"))    { r=120; g=70;  b=0;   }
+  else if (!strcmp(currentEmotion, "curious"))  { r=0;   g=200; b=200; }
+  else if (!strcmp(currentEmotion, "happy"))    { r=255; g=165; b=0;   }
+  else if (!strcmp(currentEmotion, "listen"))   { r=0;   g=180; b=80;  }
+  else if (!strcmp(currentEmotion, "confused")) { r=120; g=0;   b=180; }
+  setLight(r, g, b);
+  curR = r; curG = g; curB = b;  // 同步更新，保持一致
+
   if      (!strcmp(currentEmotion, "curious"))  smoothMoveAsym(40, 40, YAW_CENTER - 15, basePitch - 5, SPEED_MEDIUM);
   else if (!strcmp(currentEmotion, "happy"))    smoothMove(0, YAW_CENTER, basePitch, SPEED_MEDIUM);
   else if (!strcmp(currentEmotion, "focus"))    smoothMove(90, YAW_CENTER, basePitch, SPEED_SLOW);
