@@ -26,7 +26,7 @@ MODE = "test"   # "test" 快速验证  |  "real" 正式使用
 if MODE == "test":
     CHECK_INTERVAL   = 7      # 每7秒评估一次（配合 CONFIRM_THRESHOLD=2，需14s确认）
     CURIOUS_WINDOW   = 10     # 归零 <10秒 → Curious
-    CONFUSED_WINDOW  = 20     # 归零 >20秒 → Confused
+    CONFUSED_WINDOW  = 30     # 归零 >30秒 → Confused (原 20s 太短，导致 curious 被跳过)
     ACTIVE_LOOKBACK  = 60     # 过去1分钟内有没有高活跃
     TIRED_SESSION    = 600    # 在场10分钟 → Tired（测试用，之前60s太短了）
     TIRED_HOUR       = 20     # 晚8点（测试用）
@@ -104,6 +104,10 @@ class ContextPipeline:
     # ─────────────────────────────────────────
 
     def _evaluate(self):
+        from express.study_manager import study_manager
+        if study_manager.is_paused:
+            return
+            
         current          = shared_state.get()
         previous         = shared_state.get_prev()
         session_duration = shared_state.get_session_duration()
@@ -130,7 +134,8 @@ class ContextPipeline:
 
         # ── 第二步.5：记忆预判 ──────────────────────────────────────────────
         # 仅当信号层结果是 relaxed（无强触发）且人在场时才检查
-        # 如果记忆里有当前时间段的 habit，提前触发对应情绪
+        # [Study 3 临时修改]：为了单独测试每个情绪触发机制，暂时禁用记忆预判
+        """
         if new_emotion == "relaxed" and current["face_present"]:
             try:
                 from memory.memory_store import get_preemptive_emotion
@@ -142,6 +147,7 @@ class ContextPipeline:
                     new_scenario = "Memory Anticipated"
             except Exception as mem_err:
                 print(f"[UNDERSTAND] 记忆预判查询失败: {mem_err}")
+        """
 
         # ── 第三步：生成 token（原始数据到此止步）──
         token = self._generate_token(current, new_emotion, new_scenario)
@@ -160,11 +166,13 @@ class ContextPipeline:
             print(f"[UNDERSTAND] Token log write failed: {log_err}")
 
         # ── 第四步：写入记忆 ──
-        try:
-            from memory.memory_store import save_event
-            save_event(token, new_emotion, new_scenario, current)
-        except Exception as e:
-            print(f"[UNDERSTAND] 记忆写入失败: {e}")
+        # [Study 3 临时修改]：只有明确的情绪（非 relaxed）才写入记忆数据库，避免无意义的记录
+        if new_emotion != "relaxed":
+            try:
+                from memory.memory_store import save_event
+                save_event(token, new_emotion, new_scenario, current)
+            except Exception as e:
+                print(f"[UNDERSTAND] 记忆写入失败: {e}")
 
         # ── 第五步：候选确认 + 情绪切换 ──
         # 先用 pending 机制做防抖：同一情绪连续出现 CONFIRM_THRESHOLD 次才切换
@@ -286,9 +294,19 @@ class ContextPipeline:
                 return "relaxed", "Idle Ambient"
                 
         if emotion == "happy":
-            happy_target = 30 if MODE == "test" else 60
+            if previous.get("current_emotion") == "tired":
+                print("[UNDERSTAND] 拦截突变：不能从 tired 直接转入 happy → 维持 tired缓冲")
+                return "tired", "Fatigue"
+            
+            happy_target = 15 if MODE == "test" else 60
             if active_secs < happy_target:
                 print(f"[UNDERSTAND] 时间拦截：活跃 {active_secs:.0f}s < {happy_target}s，Happy不成立 → 保持 relaxed")
+                return "relaxed", "Idle Ambient"
+
+        if emotion == "tired" and scenario == "Fatigue":
+            tired_target = 45 if MODE == "test" else 480
+            if session_duration < tired_target:
+                print(f"[UNDERSTAND] 时间拦截：在场 {session_duration:.0f}s < {tired_target}s，Tired不成立 → 保持 relaxed")
                 return "relaxed", "Idle Ambient"
 
         # ── 覆盖1：Curious vs Confused 时间区分 ──────────────

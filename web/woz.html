@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>PEARL WoZ & Study Controller</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, sans-serif; background: #1a1a1a; color: white;
+       padding: 12px; user-select: none; }
+h1 { font-size: 18px; text-align: center; color: #aaa; margin-bottom: 8px; }
+.status-bar { background: #2a2a2a; border-radius: 8px; padding: 10px 14px;
+               margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+.current { font-size: 20px; font-weight: bold; }
+.timer { font-size: 14px; color: #888; text-align: right; }
+.pause-btn { width: 100%; padding: 14px; border-radius: 10px; border: none;
+              font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 12px; }
+.pause-btn.active { background: #ff4444; color: white; }
+.pause-btn.inactive { background: #44aa44; color: white; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.emotion-btn { padding: 18px 8px; border-radius: 12px; border: none;
+                font-size: 16px; font-weight: 600; cursor: pointer;
+                transition: transform 0.1s; box-shadow: 0 3px 8px rgba(0,0,0,0.3); }
+.emotion-btn:active { transform: scale(0.95); }
+.relaxed-btn { grid-column: 1 / -1; padding: 14px; background: #F0E6D3; color: #555; }
+.log { background: #2a2a2a; border-radius: 8px; padding: 10px; max-height: 160px; overflow-y: auto; margin-bottom: 12px; }
+.log-title { font-size: 12px; color: #888; margin-bottom: 6px; }
+.log-entry { font-size: 13px; color: #ccc; padding: 3px 0; border-bottom: 1px solid #333; }
+.log-entry span { color: #888; }
+.paused-overlay { display: none; position: fixed; top: 0; left: 0; right: 0;
+                   background: rgba(255,68,68,0.15); padding: 6px;
+                   text-align: center; font-size: 14px; color: #ff8888; font-weight: bold; }
+.phase-btn { width: 48%; padding: 10px; border: none; color: white;
+              border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: bold; }
+.phase-container { display: flex; justify-content: space-between; }
+</style>
+</head><body>
+<div class="paused-overlay" id="pausedBanner">⏸ SYSTEM PAUSED</div>
+<h1>PEARL WoZ Controller</h1>
+
+<div class="status-bar">
+    <div>
+        <div style="font-size:11px;color:#888" id="phaseStatus">Idle</div>
+        <div class="current" id="currentEmotion">relaxed</div>
+    </div>
+    <div class="timer" id="timer">T+0s</div>
+</div>
+
+<button class="pause-btn inactive" id="pauseBtn" onclick="togglePause()">
+    ⏸ PAUSE SYSTEM
+</button>
+
+<div class="grid">
+    <button class="emotion-btn" onclick="trigger('focus')" style="background:#1a3a6b;color:white">🎯 Focus</button>
+    <button class="emotion-btn" onclick="trigger('tired')" style="background:#7a6000;color:white">😴 Tired</button>
+    <button class="emotion-btn" onclick="trigger('curious')" style="background:#007a8a;color:white">🤔 Curious</button>
+    <button class="emotion-btn" onclick="trigger('happy')" style="background:#c47b00;color:white">😊 Happy</button>
+    <button class="emotion-btn" onclick="trigger('listen')" style="background:#157a40;color:white">👂 Listen</button>
+    <button class="emotion-btn" onclick="trigger('confused')" style="background:#5500b0;color:white">😕 Confused</button>
+    <button class="emotion-btn relaxed-btn" onclick="trigger('relaxed')">😌 Relaxed</button>
+</div>
+
+<div class="log">
+    <div class="log-title">Trigger Log</div>
+    <div id="logEntries"></div>
+</div>
+
+<div class="phase-container">
+    <button class="phase-btn" style="background:#007a8a; width:32%;" onclick="startPhase('phase1')">⏺ P1</button>
+    <button class="phase-btn" style="background:#c47b00; width:32%;" onclick="startPhase('phase2')">⏺ P2</button>
+    <button class="phase-btn" style="background:#883333; width:32%;" onclick="startPhase('stop')">⏹ Stop</button>
+</div>
+
+<script>
+let paused = false;
+
+function trigger(emotion) {
+    fetch('/inject', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({emotion})
+    }).then(r => r.json()).then(poll);
+}
+
+function togglePause() {
+    fetch('/study/pause', {method: 'POST'}).then(poll);
+}
+
+function startPhase(phase) {
+    let targetEndpoint = phase;
+    if (phase === 'stop') {
+        if (!confirm('Stop current phase and save?')) return;
+        const statusText = document.getElementById('phaseStatus').textContent;
+        targetEndpoint = statusText.includes('Phase 1') ? 'stop1' : 'stop2';
+    } else {
+        if (!confirm(`Start ${phase}?`)) return;
+    }
+    fetch(`/study/${targetEndpoint}`, {method: 'POST'}).then(poll);
+}
+
+function updatePauseUI() {
+    const btn = document.getElementById('pauseBtn');
+    const banner = document.getElementById('pausedBanner');
+    if (paused) {
+        btn.textContent = '▶ RESUME SYSTEM';
+        btn.className = 'pause-btn active';
+        banner.style.display = 'block';
+    } else {
+        btn.textContent = '⏸ PAUSE SYSTEM';
+        btn.className = 'pause-btn inactive';
+        banner.style.display = 'none';
+    }
+}
+
+function poll() {
+    fetch('/study/status').then(r => r.json()).then(d => {
+        if (d.current) document.getElementById('currentEmotion').textContent = d.current;
+        
+        let phaseText = "Idle";
+        if (d.phase1) phaseText = "⏺ Phase 1 (Recording)";
+        if (d.phase2) phaseText = "⏺ Phase 2 (Recording)";
+        document.getElementById('phaseStatus').textContent = phaseText;
+        
+        if (d.log) {
+            const el = document.getElementById('logEntries');
+            el.innerHTML = d.log.slice().reverse().map(e =>
+                `<div class="log-entry">T+${e.time_offset.toFixed(1)}s → ${e.emotion}</div>`
+            ).join('');
+        }
+        
+        if (typeof d.paused !== 'undefined') {
+            paused = d.paused;
+            updatePauseUI();
+        }
+        
+        const m = Math.floor(d.elapsed / 60);
+        const s = Math.floor(d.elapsed % 60);
+        document.getElementById('timer').innerHTML = `T+${m}:${s.toString().padStart(2,'0')}<br><small style="font-size:10px">${d.session_dur}s active</small>`;
+    }).catch(() => {});
+}
+
+setInterval(poll, 1000);
+poll();
+</script>
+</body></html>

@@ -29,6 +29,29 @@ class DashboardHandler(SimpleHTTPRequestHandler):
         path = urlparse(self.path).path
         if path == '/state':
             self._json(shared_state.get())
+        elif path == '/woz':
+            try:
+                with open(os.path.join(os.path.dirname(__file__), 'woz.html'), 'rb') as f:
+                    html = f.read()
+                self.send_response(200)
+                self.send_header('Content-Type', 'text/html; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(html)
+            except Exception as e:
+                self._json({'ok': False, 'error': str(e)})
+        elif path == '/study/status':
+            from express.study_manager import study_manager
+            import time
+            elapsed = time.time() - study_manager.start_time if study_manager.start_time else 0
+            self._json({
+                'current': shared_state.get().get('current_emotion', 'relaxed'),
+                'paused': study_manager.is_paused,
+                'phase1': study_manager.phase1_active,
+                'phase2': study_manager.phase2_active,
+                'elapsed': elapsed,
+                'session_dur': int(shared_state.get_session_duration()),
+                'log': study_manager.recordings[-10:]
+            })
         else:
             super().do_GET()
 
@@ -72,6 +95,11 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     params = get_emotion(emotion)
                     bridge.send_emotion(params)
 
+                # ── 5. 同步记录到 Study 3 Phase 1 (如果是正在记录阶段) ──
+                from express.study_manager import study_manager
+                if study_manager.phase1_active and emotion not in ('alert', 'shy'):
+                    study_manager.record_emotion(emotion)
+
                 print(f"[WEB] 🎛️  Inject: {emotion}")
                 self._json({'ok': True, 'emotion': emotion})
 
@@ -80,6 +108,27 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 tb = traceback.format_exc()
                 traceback.print_exc()
                 self._json({'ok': False, 'error': str(e), 'traceback': tb})
+
+        elif path == '/study/pause':
+            from express.study_manager import study_manager
+            study_manager.toggle_pause()
+            self._json({'ok': True, 'paused': study_manager.is_paused})
+            
+        elif path == '/study/phase1':
+            from express.study_manager import study_manager
+            study_manager.start_phase1()
+            self._json({'ok': True})
+            
+        elif path == '/study/stop1':
+            from express.study_manager import study_manager
+            study_manager.stop_phase1()
+            self._json({'ok': True})
+            
+        elif path == '/study/phase2':
+            from express.study_manager import study_manager
+            from express.serial_bridge import bridge
+            study_manager.start_phase2(bridge, context_pipeline_ref)
+            self._json({'ok': True})
 
         else:
             self.send_response(404)

@@ -1,0 +1,27 @@
+[
+  {
+    "time_offset": 0.0,
+    "emotion": "relaxed",
+    "s5_at_trigger": "low"
+  },
+  {
+    "time_offset": 39.22,
+    "emotion": "listen",
+    "s5_at_trigger": "low"
+  },
+  {
+    "time_offset": 79.94,
+    "emotion": "relaxed",
+    "s5_at_trigger": "low"
+  },
+  {
+    "time_offset": 186.86,
+    "emotion": "curious",
+    "s5_at_trigger": "low"
+  },
+  {
+    "time_offset": 279.95,
+    "emotion": "focus",
+    "s5_at_trigger": "low"
+  }
+]

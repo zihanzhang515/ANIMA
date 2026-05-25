@@ -38,14 +38,14 @@ VOICE_ENERGY_RATIO  = 0.65
 HISTORY_SIZE        = 15
 
 # ── ZCR 语音/音乐区分参数 ──
-ZCR_SPEECH_MIN  = 0.06   # 说话 ZCR 下限（低于此值即使 voice_ratio 达标也判为音乐）
-ZCR_VAR_MIN     = 0.02   # ZCR 帧间变化下限（音乐稳定，说话变化大）
+ZCR_SPEECH_MIN  = 0.03   # 说话 ZCR 下限（原 0.06 太高，男声或普通说话时容易达不到被判为音乐）
+ZCR_VAR_MIN     = 0.01   # ZCR 帧间变化下限
 
 # ── 低频（Bass）特征：音乐低频能量明显高于说话 ──
 BASS_FREQ_LOW   = 50     # bass 频段下限 Hz
 BASS_FREQ_HIGH  = 200    # bass 频段上限 Hz
-BASS_MUSIC_RATIO = 0.12  # bass 占总能量超过此比例 → 倾向于音乐
-BASS_SPEECH_MAX  = 0.08  # bass 占总能量低于此比例 → 更可能是说话
+BASS_MUSIC_RATIO = 0.25  # bass 占总能量超过此比例 → 倾向于音乐（原 0.12 太低，人声容易超标）
+BASS_SPEECH_MAX  = 0.15  # bass 占总能量低于此比例 → 更可能是说话
 
 # ── 滑动窗口 speech 门槛 ──
 SPEECH_WINDOW_RATIO = 0.45   # 原来 0.15 太低，有人声的歌轻松超过

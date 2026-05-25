@@ -40,7 +40,9 @@ def main():
 
     def on_emotion_change(emotion_name: str, scenario: str, params: dict):
         print(f"\n[MAIN] ✨ Emotion → {emotion_name} ({scenario})")
-        # 同步情绪状态到 realtime_pipeline（用于 idle 调度和 tracking 控制）
+        
+        from express.study_manager import study_manager
+        study_manager.record_emotion(emotion_name)
         
         # 发送情绪命令
         bridge.send_emotion(params)
@@ -67,13 +69,41 @@ def main():
     from web.server import start_dashboard
     start_dashboard(pipeline=context_pipeline, realtime_pipeline=realtime_pipeline)
 
-    print("\n[MAIN] ANIMA running. Press Ctrl+C to stop.\n")
+    print("\n[MAIN] ANIMA running.")
+    print("  👉 Type 'phase1' to start 20-min recording")
+    print("  👉 Type 'phase2' to start replay from recording")
+    print("  👉 Press Ctrl+C to stop.\n")
+
+    def command_listener():
+        from express.study_manager import study_manager
+        while not stop_event.is_set():
+            try:
+                cmd = input().strip().lower()
+                if cmd == "phase1":
+                    study_manager.start_phase1()
+                elif cmd == "phase2":
+                    study_manager.start_phase2(bridge, context_pipeline)
+                elif cmd == "stop1":
+                    study_manager.stop_phase1()
+                elif cmd == "p":
+                    study_manager.toggle_pause()
+            except EOFError:
+                break
+                
+    cmd_thread = threading.Thread(target=command_listener, daemon=True)
+    cmd_thread.start()
 
     try:
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
         print("\n[MAIN] Shutting down...")
+        from express.study_manager import study_manager
+        if study_manager.phase1_active:
+            study_manager.print_analysis("Phase 1 (Interrupted)")
+        elif study_manager.phase2_active:
+            study_manager.print_analysis("Phase 2 (Interrupted)")
+            
         stop_event.set()
         context_pipeline.stop()
         realtime_pipeline.stop()

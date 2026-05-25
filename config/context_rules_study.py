@@ -60,7 +60,7 @@ CONTEXT_RULES = [
             "audio_category": ["silence", "ambient"],
             "input_rate": "high",
         },
-        "min_duration_sec": 60,      # 生产: 600s
+        "min_duration_sec": 0,       # 统一交由 pipeline 的 active_secs 拦截
     },
 
     # ── Scenario 2: High Energy ────────────────────────────────
@@ -74,7 +74,7 @@ CONTEXT_RULES = [
             "audio_category": "music",   # 只有明确的音乐，不包括 speech
             "input_rate": "high",        # 必须高速打字，medium 太容易误触
         },
-        "min_duration_sec": 30,          # 持续 30s 才触发
+        "min_duration_sec": 0,           # 交由 pipeline 拦截
     },
 
     # ── Scenario 3: On a Call ──────────────────────────────────
@@ -140,10 +140,7 @@ CONTEXT_RULES = [
             "speech_active": False,
             "audio_category": ["silence", "ambient"],
         },
-        "requires_transition_from": {
-            "input_rate": "high"       # 必须从高速打字降下来
-        },
-        "min_duration_sec": 90,        # 持续变慢 90s（生产: 480s）
+        "min_duration_sec": 0,         # 交由 pipeline 拦截
     },
 
     # ── Scenario 7: Brief Absence ─────────────────────────────

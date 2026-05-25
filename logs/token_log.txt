@@ -1080,3 +1080,786 @@
 [2026-05-16 19:36:07] <Idle Ambient, 19:00, Weekend, relaxed>
 [2026-05-16 19:36:14] <Idle Ambient, 19:00, Weekend, relaxed>
 [2026-05-16 19:36:21] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:36:28] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:36:35] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:36:42] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:36:49] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:36:56] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:37:03] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:37:10] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:37:17] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:37:24] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:37:31] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:37:38] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:37:45] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:37:52] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:37:59] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:38:06] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:38:13] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:38:20] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:38:27] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:38:34] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:38:41] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:38:48] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:38:55] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:39:02] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:39:09] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:39:16] <Default, 19:00, Weekend, relaxed>
+[2026-05-16 19:39:23] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:39:30] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:39:37] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:39:44] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:39:51] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:39:58] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:40:05] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:40:12] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:40:19] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:40:26] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:40:33] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:40:40] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:40:47] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:40:54] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:41:01] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:41:08] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:41:15] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:41:22] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:41:29] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:41:36] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:41:43] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:41:50] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:41:57] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:42:04] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:42:11] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:42:18] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:42:25] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:42:32] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:42:39] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:42:46] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:42:53] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:43:00] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:43:07] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:45:47] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:45:54] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:46:01] <Memory Anticipated, 19:00, Weekend, relaxed>
+[2026-05-16 19:46:38] <Memory Anticipated, 19:00, Weekend, relaxed>
+[2026-05-16 19:46:45] <Memory Anticipated, 19:00, Weekend, relaxed>
+[2026-05-16 19:46:52] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:46:59] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:47:06] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:47:13] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:58:52] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:58:59] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:59:06] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:59:13] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:59:20] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:59:27] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:59:34] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:59:41] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:59:48] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 19:59:55] <Idle Ambient, 19:00, Weekend, relaxed>
+[2026-05-16 20:00:02] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:00:09] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:00:16] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:00:23] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:00:30] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:00:37] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:00:44] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:00:51] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:00:58] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:01:05] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:01:12] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:01:19] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:01:26] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:01:33] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:01:40] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:01:47] <Default, 20:00, Weekend, relaxed>
+[2026-05-16 20:01:54] <Default, 20:00, Weekend, relaxed>
+[2026-05-16 20:02:01] <Default, 20:00, Weekend, relaxed>
+[2026-05-16 20:02:08] <Default, 20:00, Weekend, relaxed>
+[2026-05-16 20:02:15] <Default, 20:00, Weekend, relaxed>
+[2026-05-16 20:02:22] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:02:29] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:02:36] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:02:43] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:02:50] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:02:57] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:03:04] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:03:11] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:03:19] <Default, 20:00, Weekend, relaxed>
+[2026-05-16 20:03:26] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:03:33] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:03:40] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:03:47] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:03:54] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:04:01] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:04:08] <Default, 20:00, Weekend, relaxed>
+[2026-05-16 20:04:15] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:04:22] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:04:29] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:04:36] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:04:43] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:04:50] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:04:57] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:05:04] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:05:11] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:05:18] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:05:33] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:05:40] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:05:47] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:05:54] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:06:01] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:06:08] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:06:15] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:06:22] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:06:29] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:06:36] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:06:43] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:06:50] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:06:57] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:07:04] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:07:11] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:07:18] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:07:25] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:07:32] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:07:39] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:07:46] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:07:53] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:08:00] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:08:07] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:08:14] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:08:21] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:08:28] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:08:35] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:08:42] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:08:49] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:08:56] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:09:03] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:09:10] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:09:17] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:09:24] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:09:31] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:09:38] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:09:45] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:09:52] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:10:01] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:10:08] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:10:15] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:10:22] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:10:29] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:10:36] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:10:43] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:10:50] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:10:57] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:11:04] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:11:11] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:11:18] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:11:25] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:11:32] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:11:39] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:11:46] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:11:53] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:12:00] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:12:07] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:12:14] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:12:21] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:12:28] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:12:35] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:12:42] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:12:49] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:12:56] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:13:03] <Memory Anticipated, 20:00, Weekend, relaxed>
+[2026-05-16 20:13:10] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:13:17] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:13:24] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:13:31] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:13:38] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:13:45] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:13:52] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:13:59] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:14:06] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:14:13] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:14:20] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:14:27] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:22:43] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:22:50] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:22:57] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:23:04] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:23:11] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:23:18] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:23:25] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:23:32] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:23:39] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:23:46] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:23:53] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:24:00] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:24:07] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:24:14] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:24:21] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:24:28] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:24:35] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:24:42] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:24:49] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:24:56] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:25:03] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:25:10] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:25:17] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:25:24] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:25:31] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:25:38] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:25:45] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:25:52] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:25:59] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:26:06] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:26:13] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:26:20] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:26:27] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:26:34] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:35:26] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:35:33] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:35:40] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:35:47] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:35:54] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:36:01] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:36:08] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:36:15] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:36:22] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:36:29] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:36:36] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:36:43] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:36:50] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:36:57] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:37:04] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:37:11] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:37:18] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:37:25] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:37:32] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:37:39] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:37:46] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:37:53] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:38:00] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:38:07] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:38:14] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:38:21] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:38:28] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:38:36] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:38:43] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:38:50] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:38:57] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:39:04] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:39:11] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:39:18] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:39:25] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:39:32] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:39:39] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:39:46] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:39:53] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:40:00] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:40:07] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:40:14] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:40:21] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:40:28] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:40:35] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:40:42] <Fatigue, 20:00, Weekend, tired>
+[2026-05-16 20:40:49] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:40:56] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:41:03] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:41:10] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:41:17] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:41:24] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:41:31] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:41:38] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:41:45] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:41:52] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:41:59] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:42:06] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:42:13] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:42:20] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:42:27] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:42:34] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:42:41] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:42:48] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:42:55] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:43:02] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:43:09] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:43:16] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:43:23] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:43:30] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:43:37] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:43:44] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:43:51] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:43:58] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:44:05] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:44:12] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:44:19] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:44:26] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:44:33] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:44:40] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:44:47] <Stuck, 20:00, Weekend, confused>
+[2026-05-16 20:44:54] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:45:01] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:45:08] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:45:15] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:45:22] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:45:29] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:45:36] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:45:43] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:45:50] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:45:57] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:46:04] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:46:11] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:46:18] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:46:25] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:46:32] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:46:39] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:46:46] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:46:53] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:47:00] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:47:07] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:47:14] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:47:21] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:47:28] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:47:35] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:47:42] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:47:49] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:47:56] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:48:03] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:48:10] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:48:17] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:48:24] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:48:31] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:48:38] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:48:45] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:48:52] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:48:59] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:49:06] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:49:13] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:49:20] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:49:27] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:49:34] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:49:41] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:49:48] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:49:55] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:50:02] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:50:09] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:50:16] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:50:23] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:50:30] <High Energy, 20:00, Weekend, happy>
+[2026-05-16 20:50:37] <Deep Focus, 20:00, Weekend, focus>
+[2026-05-16 20:50:44] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 20:50:51] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:50:58] <Daydreaming, 20:00, Weekend, curious>
+[2026-05-16 20:51:05] <Idle Ambient, 20:00, Weekend, relaxed>
+[2026-05-16 22:06:34] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:06:41] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:06:48] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:06:55] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:07:02] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:07:09] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:07:16] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:07:23] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:07:30] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:07:37] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:07:44] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:07:51] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:07:58] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:08:05] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:08:12] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:08:19] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:08:27] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:08:34] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:08:41] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:08:48] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:08:55] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:09:02] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:09:09] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:09:16] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:09:23] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:09:30] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:09:37] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:09:44] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:09:51] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:09:58] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:10:05] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:10:12] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:10:19] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:10:26] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:10:33] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:10:40] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:10:47] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:10:54] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:11:01] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:11:08] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:11:31] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:11:38] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:11:45] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:11:52] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:11:59] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:12:06] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:12:13] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:12:20] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:12:27] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:12:34] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:12:41] <Default, 22:00, Weekend, relaxed>
+[2026-05-16 22:12:48] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:12:55] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:13:02] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:13:09] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:13:16] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:13:23] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:13:30] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:13:37] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:13:44] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:13:51] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:13:58] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:14:05] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:14:26] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:14:33] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:14:40] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:14:47] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:14:54] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:15:01] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:15:08] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:15:15] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:15:22] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:15:29] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:15:36] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:15:43] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:15:50] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:15:57] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:16:04] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:16:11] <Fatigue, 22:00, Weekend, tired>
+[2026-05-16 22:16:18] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:16:25] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:16:32] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:16:39] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:16:46] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:16:53] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:17:00] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:17:07] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:17:14] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:17:21] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:17:28] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:17:35] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:17:42] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:17:49] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:17:56] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:18:03] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:18:10] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:18:17] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:18:24] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:18:31] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:18:38] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:18:45] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:18:52] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:18:59] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:19:06] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:19:13] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:19:27] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:19:34] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:19:41] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:26:26] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:26:40] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:26:47] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:26:54] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:27:01] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:27:08] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:32:48] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:32:55] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:33:09] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:33:16] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:33:23] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:33:30] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:33:37] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:33:44] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:33:51] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:33:58] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:34:05] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:34:12] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:34:19] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:34:26] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:34:33] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:34:40] <Fatigue, 22:00, Weekend, tired>
+[2026-05-16 22:34:47] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:34:54] <Fatigue, 22:00, Weekend, tired>
+[2026-05-16 22:35:01] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:35:08] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:35:15] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:35:22] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:35:29] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:36:03] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:36:10] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:36:17] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:36:24] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:36:31] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:36:38] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:36:45] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:36:52] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:36:59] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:37:06] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:37:20] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:37:27] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:37:34] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:37:41] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:37:48] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:37:55] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:38:02] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:38:09] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:38:16] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:38:24] <Deep Focus, 22:00, Weekend, focus>
+[2026-05-16 22:38:31] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:38:38] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:38:45] <Deep Focus, 22:00, Weekend, focus>
+[2026-05-16 22:38:52] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:38:59] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:39:06] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:39:13] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:39:20] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:39:27] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:39:34] <Deep Focus, 22:00, Weekend, focus>
+[2026-05-16 22:39:41] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:39:48] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:39:55] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:40:02] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:40:09] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:40:16] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:40:23] <Deep Focus, 22:00, Weekend, focus>
+[2026-05-16 22:40:44] <Fatigue, 22:00, Weekend, tired>
+[2026-05-16 22:40:51] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:40:58] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:41:05] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:41:12] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:41:19] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:41:26] <Stuck, 22:00, Weekend, confused>
+[2026-05-16 22:41:33] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:41:40] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:41:47] <Fatigue, 22:00, Weekend, tired>
+[2026-05-16 22:41:54] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:42:01] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:42:08] <Fatigue, 22:00, Weekend, tired>
+[2026-05-16 22:42:15] <Fatigue, 22:00, Weekend, tired>
+[2026-05-16 22:42:22] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:42:29] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:42:36] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:42:43] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:42:50] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:42:57] <Deep Focus, 22:00, Weekend, focus>
+[2026-05-16 22:43:04] <Fatigue, 22:00, Weekend, tired>
+[2026-05-16 22:43:11] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:43:18] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:43:25] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:43:32] <Daydreaming, 22:00, Weekend, curious>
+[2026-05-16 22:43:39] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:43:46] <Fatigue, 22:00, Weekend, tired>
+[2026-05-16 22:43:53] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:44:00] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:44:07] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:44:14] <High Energy, 22:00, Weekend, happy>
+[2026-05-16 22:44:21] <Deep Focus, 22:00, Weekend, focus>
+[2026-05-16 22:44:28] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:55:58] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:56:05] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:56:12] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:56:19] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:56:26] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-16 22:56:33] <On a Call, 22:00, Weekend, listen>
+[2026-05-16 22:56:40] <Idle Ambient, 22:00, Weekend, relaxed>
+[2026-05-17 14:10:58] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:11:05] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:11:12] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:11:19] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:11:26] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:11:33] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:11:40] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:11:47] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:11:54] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:12:01] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:12:08] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:12:15] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:12:22] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:12:29] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:12:36] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:13:28] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:13:35] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:13:42] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:13:49] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:13:56] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:14:03] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:14:10] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:14:17] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:14:24] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:14:31] <Daydreaming, 14:00, Weekend, curious>
+[2026-05-17 14:14:38] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:14:45] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:14:52] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:14:59] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:15:06] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:15:13] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:15:20] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:15:27] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:15:34] <Fatigue, 14:00, Weekend, tired>
+[2026-05-17 14:15:41] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 14:15:48] <Idle Ambient, 14:00, Weekend, relaxed>
+[2026-05-17 16:17:04] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:17:11] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:17:18] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:17:25] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:17:32] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:18:35] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:18:42] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:18:49] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:18:56] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:19:03] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:19:10] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:19:17] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:19:24] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:19:31] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:19:38] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:19:45] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:19:52] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:19:59] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:20:06] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:20:13] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:20:20] <Daydreaming, 16:00, Weekend, curious>
+[2026-05-17 16:20:27] <Daydreaming, 16:00, Weekend, curious>
+[2026-05-17 16:20:34] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:20:41] <Stuck, 16:00, Weekend, confused>
+[2026-05-17 16:20:48] <Stuck, 16:00, Weekend, confused>
+[2026-05-17 16:30:36] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:30:43] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:30:50] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:30:57] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:31:04] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:31:11] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:31:18] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:31:25] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:31:32] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:31:39] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:31:46] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:31:53] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:32:00] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:32:07] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:32:14] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:32:21] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:32:28] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:32:35] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-17 16:32:42] <Idle Ambient, 16:00, Weekend, relaxed>
+[2026-05-21 17:59:46] <Idle Ambient, 17:00, Weekday, relaxed>
+[2026-05-21 17:59:53] <Idle Ambient, 17:00, Weekday, relaxed>
+[2026-05-21 18:00:00] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:00:07] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:00:14] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:00:21] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:00:28] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:00:35] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:00:42] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:00:49] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:00:56] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:01:03] <Daydreaming, 18:00, Weekday, curious>
+[2026-05-21 18:01:10] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:01:17] <Active Break, 18:00, Weekday, curious>
+[2026-05-21 18:01:24] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:01:31] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:01:38] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:01:45] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:01:52] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:01:59] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:02:06] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:02:13] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:02:20] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:02:27] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:02:34] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:02:41] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:02:48] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:02:55] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:03:02] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:03:09] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:03:16] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:03:23] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:03:30] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:03:37] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:03:44] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:03:51] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:03:58] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:04:05] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:04:12] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:04:19] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:04:26] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:04:33] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:04:40] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:04:47] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:04:54] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:05:01] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:05:08] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:05:15] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:05:22] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:05:29] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:05:36] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:05:43] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:05:50] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:05:57] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:06:04] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:06:11] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:06:18] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:06:25] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:06:32] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:06:39] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:06:46] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:06:53] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:07:00] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:07:07] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:07:14] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:07:21] <Daydreaming, 18:00, Weekday, curious>
+[2026-05-21 18:07:28] <Daydreaming, 18:00, Weekday, curious>
+[2026-05-21 18:07:35] <Daydreaming, 18:00, Weekday, curious>
+[2026-05-21 18:07:42] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:07:49] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:07:56] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:08:03] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:08:10] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:08:17] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:08:24] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:08:31] <Daydreaming, 18:00, Weekday, curious>
+[2026-05-21 18:08:38] <Daydreaming, 18:00, Weekday, curious>
+[2026-05-21 18:08:45] <Stuck, 18:00, Weekday, confused>
+[2026-05-21 18:08:52] <Default, 18:00, Weekday, relaxed>
+[2026-05-21 18:08:59] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:09:06] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:09:13] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:09:20] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:09:27] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:09:34] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:09:41] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:09:48] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:09:55] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:10:02] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:10:09] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:10:16] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:10:23] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:10:30] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:10:37] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:10:44] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:10:51] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:10:58] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:11:05] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:11:12] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:11:19] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:11:26] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:11:33] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:11:40] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:11:47] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:11:54] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:12:01] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:12:08] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:12:15] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:12:22] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:12:29] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:12:36] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:12:43] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:12:50] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:12:57] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:13:04] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:13:11] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:13:18] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:13:25] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:13:32] <Idle Ambient, 18:00, Weekday, relaxed>
+[2026-05-21 18:13:39] <Idle Ambient, 18:00, Weekday, relaxed>

@@ -24,7 +24,7 @@ IDLE_MIN_SEC = 8
 IDLE_MAX_SEC = 20
 
 COOLDOWNS = {
-    "alert": 8,
+    "alert": 45,   # 和 shy 一样，45秒冷却
     "shy":   45,
 }
 _last_reflex_time = {"alert": 0, "shy": 0}
@@ -74,8 +74,13 @@ class RealtimePipeline:
 
     def _run(self):
         global _face_size_baseline, _shy_approach_start
+        from express.study_manager import study_manager
 
         while not self._stop_event.is_set():
+            if study_manager.is_paused:
+                time.sleep(REALTIME_INTERVAL)
+                continue
+
             state = shared_state.get()
             now   = time.time()
 
@@ -103,8 +108,10 @@ class RealtimePipeline:
 
             # ── 反射检测 ─────────────────────────────────────
             if self.current_emotion not in NO_REFLEX_EMOTIONS:
-                self._check_alert(state, now)
-                self._check_shy(state, now)
+                # [Study 3] 禁用 Shy 和 Alert
+                # self._check_alert(state, now)
+                # self._check_shy(state, now)
+                pass
 
             time.sleep(REALTIME_INTERVAL)
 
