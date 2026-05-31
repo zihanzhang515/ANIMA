@@ -1,8 +1,8 @@
 """
 sense/face_tracker.py — v2
-新增：追踪脸部大小（bbox.width），用于 Shy 触发检测
-face_size 是脸部宽度占画面宽度的比例（0.0-1.0）
-正常坐在电脑前大约 0.1-0.2，靠近时会增大
+Added face size tracking (bbox.width) for Shy reflex detection.
+face_size is the bounding box width as a fraction of the frame width (0.0–1.0).
+Typical seated distance: ~0.10–0.20; increases as user moves closer.
 """
 
 import cv2
@@ -49,8 +49,8 @@ def run_face_tracker(stop_event: threading.Event):
                     face_center_x = round(bbox.xmin + bbox.width / 2, 3)
                     face_center_x = max(0.0, min(1.0, face_center_x))
 
-                    # 脸部大小 = bounding box 宽度（相对画面宽度）
-                    # 正常距离约 0.10-0.20，靠近时增大
+                    # Face size = bounding box width relative to frame width
+                    # Normal seated distance: ~0.10-0.20; increases as user approaches
                     face_size = round(min(1.0, max(0.0, bbox.width)), 3)
 
                     shared_state.update("face_present", True)

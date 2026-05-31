@@ -1,34 +1,34 @@
 """
 config/context_rules_study.py
 ------------------------------
-Study 3 自动版场景规则表（20 分钟 session 压缩阈值）
+Study 3 auto-sensor rule table (compressed thresholds for 20-minute sessions).
 
-生产版本在 config/context_rules.py，不要改那个。
+Production rules are in config/context_rules.py — do not modify that file.
 
-切换方式（在 understand/context_pipeline.py 里改一行）：
+To switch (one line in understand/context_pipeline.py):
   from config.context_rules_study import CONTEXT_RULES, match_context
 
-情绪触发逻辑重新设计（解决 curious/tired/confused 重叠问题）：
+Emotion trigger logic (redesigned to resolve curious/tired/confused overlap):
 
-  情绪        核心区分                          触发时机
-  ──────────────────────────────────────────────────────
-  focus      还在高速打字（high input）          专注工作 60s+
-  happy      听音乐/说话同时在打字               有声音环境下活跃
-  listen     有人声，不在打字                    正在通话/开会
-  curious    完全停止打字（low），刚停20~60s      发呆介入
-  confused   完全停止打字（low），超过60s         卡住了
-  tired      还在打字但变慢（medium），持续90s    疲劳减速
-  ──────────────────────────────────────────────────────
-  关键区分：
-    curious / confused  → input = LOW（完全没在打）
-    tired               → input = MEDIUM（还在打，但慢了）
+  Emotion     Core distinction                          When triggered
+  ─────────────────────────────────────────────────────────────────────
+  focus      Still typing fast (high input)             Active work for 60s+
+  happy      Music playing while typing fast            Active with audio stimulus
+  listen     Speech detected, not typing                On a call / in a meeting
+  curious    Fully stopped typing (low), just stopped   Spacing out (20-60s)
+  confused   Fully stopped typing (low), long pause     Stuck (60s+)
+  tired      Typing slowly (medium), sustained           Fatigue slowdown
+
+  Key distinction:
+    curious / confused → input = LOW  (not typing at all)
+    tired              → input = MEDIUM (typing, but slow)
 """
 
 import datetime
 
-# ── 冷却时间（情绪切换后的最短间隔）──────────────────────────
+# ── Cooldown: minimum interval between emotion triggers ──────────────────
 EMOTION_COOLDOWN_SEC = {
-    "focus":    30,    # 生产: 120s
+    "focus":    30,    # Production: 120s
     "tired":    30,
     "curious":  20,
     "happy":    20,
@@ -37,9 +37,9 @@ EMOTION_COOLDOWN_SEC = {
     "relaxed":  0,
 }
 
-# ── 条件消失后回 Relaxed 的延迟 ───────────────────────────────
+# ── Delay before returning to Relaxed after a condition disappears ────────
 RETURN_TO_RELAXED_DELAY_SEC = {
-    "focus":    20,    # 生产: 60s
+    "focus":    20,    # Production: 60s
     "tired":    15,
     "curious":  15,
     "happy":    20,
@@ -49,8 +49,8 @@ RETURN_TO_RELAXED_DELAY_SEC = {
 
 CONTEXT_RULES = [
 
-    # ── Scenario 1: Deep Focus ─────────────────────────────────
-    # 用户专注打字：high input + 安静 + 持续 60s
+    # ── Scenario 1: Deep Focus ─────────────────────────────────────────────
+    # High typing rate, quiet environment, no speech
     {
         "scenario": "Deep Focus",
         "emotion": "focus",
@@ -60,25 +60,24 @@ CONTEXT_RULES = [
             "audio_category": ["silence", "ambient"],
             "input_rate": "high",
         },
-        "min_duration_sec": 0,       # 统一交由 pipeline 的 active_secs 拦截
+        "min_duration_sec": 0,       # Duration gate handled by pipeline active_secs check
     },
 
-    # ── Scenario 2: High Energy ────────────────────────────────
-    # 非常严格：必须在播放音乐（非 speech）且高速打字，持续 30s
-    # 写作 session 中 speech 场景应该是 listen，不是 happy
+    # ── Scenario 2: High Energy ────────────────────────────────────────────
+    # Strict: music (not speech) + high typing rate; speech environment → listen, not happy
     {
         "scenario": "High Energy",
         "emotion": "happy",
         "conditions": {
             "face_present": True,
-            "audio_category": "music",   # 只有明确的音乐，不包括 speech
-            "input_rate": "high",        # 必须高速打字，medium 太容易误触
+            "audio_category": "music",   # Explicit music only; speech excluded
+            "input_rate": "high",        # High rate required; medium causes too many false positives
         },
-        "min_duration_sec": 0,           # 交由 pipeline 拦截
+        "min_duration_sec": 0,           # Duration gate handled by pipeline
     },
 
-    # ── Scenario 3: On a Call ──────────────────────────────────
-    # 用户在通话/会议中：有人声 + 不在打字
+    # ── Scenario 3: On a Call ──────────────────────────────────────────────
+    # Speech detected + not typing → call or meeting
     {
         "scenario": "On a Call",
         "emotion": "listen",
@@ -90,61 +89,57 @@ CONTEXT_RULES = [
         "min_duration_sec": 0,
     },
 
-    # ── Scenario 4: Daydreaming / Spacing Out ─────────────────
-    # 用户发呆（刚停下来）：从活跃 → 完全停止打字，20~60s 内
-    # ANIMA 介入，表达好奇："你在想什么呢？"
-    # 注意：max_duration_sec=60，超过60s自动升级为 confused
+    # ── Scenario 4: Daydreaming / Spacing Out ─────────────────────────────
+    # User was active, then fully stopped typing for 20-60s
     {
         "scenario": "Daydreaming",
         "emotion": "curious",
         "conditions": {
             "face_present": True,
-            "input_rate": "low",       # 完全没在打字
+            "input_rate": "low",       # Fully stopped
             "speech_active": False,
         },
         "requires_transition_from": {
-            "input_rate": ["medium", "high"]  # 必须从活跃状态转来
+            "input_rate": ["medium", "high"]  # Must come from an active state
         },
-        "min_duration_sec": 20,        # 发呆 20s 才触发（排除短暂停顿）
-        "max_duration_sec": 60,        # 发呆超 60s → 升级为 confused
+        "min_duration_sec": 20,        # Ignore brief pauses under 20s
+        "max_duration_sec": 60,        # Beyond 60s → escalate to confused
     },
 
-    # ── Scenario 5: Stuck / Confused ──────────────────────────
-    # 用户发呆更久，可能卡住了：same low input，但持续 60s 以上
-    # ANIMA 表现困惑："是遇到什么问题了吗？"
+    # ── Scenario 5: Stuck / Confused ──────────────────────────────────────
+    # Same low-input state as curious but sustained for 60s+
     {
         "scenario": "Stuck",
         "emotion": "confused",
         "conditions": {
             "face_present": True,
-            "input_rate": "low",       # 完全没在打字（同 curious）
+            "input_rate": "low",
             "speech_active": False,
             "audio_category": ["silence", "ambient"],
         },
         "requires_transition_from": {
             "input_rate": ["medium", "high"]
         },
-        "min_duration_sec": 60,        # 发呆 60s 以上才触发
+        "min_duration_sec": 60,
     },
 
-    # ── Scenario 6: Fatigue / Slowdown ────────────────────────
-    # 用户还在打字但速度明显变慢（medium，不是 low）
-    # 关键区分：curious/confused 是完全不打字，tired 是还在打但疲惫
-    # ANIMA 表现疲惫："你是不是有点累了？"
+    # ── Scenario 6: Fatigue / Slowdown ────────────────────────────────────
+    # Still typing but noticeably slower (medium, not low)
+    # Key distinction from curious/confused: user IS typing, just fatigued
     {
         "scenario": "Fatigue",
         "emotion": "tired",
         "conditions": {
             "face_present": True,
-            "input_rate": "medium",    # 还在打字，但变慢了（不是 low）
+            "input_rate": "medium",    # Slowed but not stopped
             "speech_active": False,
             "audio_category": ["silence", "ambient"],
         },
-        "min_duration_sec": 0,         # 交由 pipeline 拦截
+        "min_duration_sec": 0,         # Duration gate handled by pipeline
     },
 
-    # ── Scenario 7: Brief Absence ─────────────────────────────
-    # 用户短暂离开座位：ANIMA 左右张望，等你回来
+    # ── Scenario 7: Brief Absence ─────────────────────────────────────────
+    # User stepped away briefly; ANIMA looks around waiting
     {
         "scenario": "Brief Absence",
         "emotion": "curious",
@@ -153,12 +148,12 @@ CONTEXT_RULES = [
             "input_rate": "low",
             "speech_active": False,
         },
-        "min_duration_sec": 20,        # 生产: 300s
+        "min_duration_sec": 20,        # Production: 300s
         "max_duration_sec": 120,
     },
 
-    # ── Scenario 8: Long Absence ──────────────────────────────
-    # 用户长时间不在：ANIMA 进入低能耗困倦状态
+    # ── Scenario 8: Long Absence ──────────────────────────────────────────
+    # Extended absence; ANIMA enters low-energy drowsy state
     {
         "scenario": "Long Absence",
         "emotion": "tired",
@@ -167,10 +162,10 @@ CONTEXT_RULES = [
             "input_rate": "low",
             "speech_active": False,
         },
-        "min_duration_sec": 120,       # 生产: 2700s
+        "min_duration_sec": 120,       # Production: 2700s
     },
 
-    # ── Default ───────────────────────────────────────────────
+    # ── Default ───────────────────────────────────────────────────────────
     {
         "scenario": "Idle Ambient",
         "emotion": "relaxed",

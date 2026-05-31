@@ -5,11 +5,12 @@ sense/audio_detector.py
 S3: Is speech happening? (True/False)
 S4: What audio category? ("silence" / "speech" / "music" / "alert_spike")
 
-修改记录 v2：
-  1. 新增 ZCR（零交叉率）特征 — 说话时断断续续，ZCR 高且变化大；
-                               音乐持续稳定，ZCR 低且变化小
-  2. classify() 改为 voice_ratio + ZCR 双重验证，才认定为 speech
-  3. 滑动窗口 speech 锁定门槛从 0.15 → 0.45，防止有人声的歌曲误判
+Changes in v2:
+  1. Added ZCR (zero-crossing rate): speech has high, variable ZCR;
+     music has low, stable ZCR.
+  2. classify() now requires voice_ratio + ZCR double-verification for speech.
+  3. Sliding-window speech lock threshold raised from 0.15 to 0.45
+     to prevent vocal songs from being misclassified as speech.
 """
 
 import sys
@@ -26,7 +27,7 @@ SAMPLE_RATE = 16000
 CHUNK_SIZE  = 1024
 CHANNELS    = 1
 
-# ── 分类阈值（校准后的值）──
+# ── Classification thresholds (calibrated) ──────────────────────────────
 SILENCE_THRESHOLD   = 100
 SPEECH_THRESHOLD    = 150
 ENERGETIC_THRESHOLD = 300
@@ -37,18 +38,18 @@ SPEECH_FREQ_HIGH    = 2500
 VOICE_ENERGY_RATIO  = 0.65
 HISTORY_SIZE        = 15
 
-# ── ZCR 语音/音乐区分参数 ──
-ZCR_SPEECH_MIN  = 0.03   # 说话 ZCR 下限（原 0.06 太高，男声或普通说话时容易达不到被判为音乐）
-ZCR_VAR_MIN     = 0.01   # ZCR 帧间变化下限
+# ── ZCR parameters for speech vs music distinction ───────────────────────
+ZCR_SPEECH_MIN  = 0.03   # Minimum ZCR for speech (0.06 was too high; male voices often fell below)
+ZCR_VAR_MIN     = 0.01   # Minimum frame-to-frame ZCR variance
 
-# ── 低频（Bass）特征：音乐低频能量明显高于说话 ──
-BASS_FREQ_LOW   = 50     # bass 频段下限 Hz
-BASS_FREQ_HIGH  = 200    # bass 频段上限 Hz
-BASS_MUSIC_RATIO = 0.25  # bass 占总能量超过此比例 → 倾向于音乐（原 0.12 太低，人声容易超标）
-BASS_SPEECH_MAX  = 0.15  # bass 占总能量低于此比例 → 更可能是说话
+# ── Bass (low-frequency) feature: music has far more bass than speech ─────
+BASS_FREQ_LOW    = 50     # Bass band lower bound (Hz)
+BASS_FREQ_HIGH   = 200    # Bass band upper bound (Hz)
+BASS_MUSIC_RATIO = 0.25   # Bass/total ratio above this → likely music (0.12 was too permissive)
+BASS_SPEECH_MAX  = 0.15   # Bass/total ratio below this → likely speech
 
-# ── 滑动窗口 speech 门槛 ──
-SPEECH_WINDOW_RATIO = 0.45   # 原来 0.15 太低，有人声的歌轻松超过
+# ── Sliding-window speech lock threshold ─────────────────────────────────
+SPEECH_WINDOW_RATIO = 0.45   # 0.15 was too low; vocal songs easily exceeded it
 
 
 class AudioClassifier:
@@ -70,9 +71,9 @@ class AudioClassifier:
 
     def get_zcr(self, audio_data: np.ndarray) -> float:
         """
-        零交叉率：信号每秒从正到负（或负到正）的次数占比。
-        说话时口型变化快，ZCR 高且不稳定。
-        音乐节奏连续，ZCR 低且稳定。
+        Zero-crossing rate: fraction of samples where the signal changes sign.
+        Speech has fast, variable articulation → high, unstable ZCR.
+        Music has continuous rhythm → low, stable ZCR.
         """
         audio_f = audio_data.astype(np.float32)
         zero_crossings = np.sum(np.abs(np.diff(np.sign(audio_f)))) / 2
@@ -89,10 +90,10 @@ class AudioClassifier:
 
     def is_speech_by_zcr(self, audio_data: np.ndarray) -> bool:
         """
-        ZCR 双重验证：
-        条件1 — 当前帧 ZCR 高于下限
-        条件2 — 最近几帧 ZCR 变化明显（说话不稳定，音乐稳定）
-        两个条件都满足才认为是真正的说话
+        ZCR dual-verification:
+        Condition 1 — current frame ZCR exceeds minimum threshold.
+        Condition 2 — recent frames show significant ZCR variance (speech is irregular; music is stable).
+        Both conditions must be met to classify as genuine speech.
         """
         zcr = self.get_zcr(audio_data)
         self.zcr_history.append(zcr)
@@ -129,13 +130,13 @@ class AudioClassifier:
             return {"s3_voice": False, "s4_category": "silence",
                     "rms": rms, "voice_ratio": voice_ratio, "bass_ratio": bass_ratio}
 
-        # speech 需要：voice_ratio 达标 + ZCR 达标 + 低频不能太多（排除有人声的歌）
+        # Speech requires: voice_ratio + ZCR + bass not too high (excludes vocal songs)
         voice_ratio_ok = (voice_ratio >= VOICE_ENERGY_RATIO) and (rms >= SPEECH_THRESHOLD)
         zcr_ok         = self.is_speech_by_zcr(audio_data)
-        not_music_bass = bass_ratio < BASS_MUSIC_RATIO  # 低频占比太高说明是音乐
+        not_music_bass = bass_ratio < BASS_MUSIC_RATIO  # High bass ratio indicates music
         is_voice       = voice_ratio_ok and zcr_ok and not_music_bass
 
-        # 反过来：低频明显 → 直接判为音乐（不管 voice_ratio 多高）
+        # Conversely: strong bass → classify as music regardless of voice_ratio
         is_music_by_bass = (bass_ratio >= BASS_MUSIC_RATIO) and (rms >= ENERGETIC_THRESHOLD * 0.5)
 
         if is_voice:
@@ -199,10 +200,10 @@ def run_audio_detector(stop_event: threading.Event):
                                 final_category = "silence"
                             else:
                                 active_counts = Counter(active_sounds)
-                                # ── 【改动2】speech 门槛 0.15 → SPEECH_WINDOW_RATIO(0.45) ──
+                                # Speech threshold raised from 0.15 to SPEECH_WINDOW_RATIO (0.45)
                                 loud_frames = sum(1 for r in rms_history_long if r >= ENERGETIC_THRESHOLD)
                                 true_loud_ratio = loud_frames / WINDOW_SIZE
-                                
+
                                 if true_loud_ratio >= 0.60:
                                     final_category = "music"
                                 elif active_counts.get("speech", 0) > len(active_sounds) * SPEECH_WINDOW_RATIO:
@@ -220,15 +221,15 @@ def run_audio_detector(stop_event: threading.Event):
 
                     if rms > 150:
                         zcr = classifier.get_zcr(audio_np)
-                        print(f"   [微调参考] RMS: {rms:5.0f} | 人声占比: {result['voice_ratio']:.1%} | ZCR: {zcr:.3f} | Bass占比: {result['bass_ratio']:.1%}")
+                        print(f"   [Tuning] RMS: {rms:5.0f} | Voice: {result['voice_ratio']:.1%} | ZCR: {zcr:.3f} | Bass: {result['bass_ratio']:.1%}")
 
                     display_cat = "alert_spike" if is_spike else final_category
                     if display_cat != last_category or is_spike:
                         icon = {"silence": "🔇", "speech": "🗣️ ",
                                 "music": "🎵", "alert_spike": "⚡"}.get(display_cat, "?")
-                        print(f"👉 [系统听觉] {icon} 锁定大场景: {final_category.upper():<10} | "
-                              f"瞬时判定: {raw_category:<12} | 说话中: {voice}"
-                              + (" [💥 突刺阻断!]" if is_spike else ""))
+                        print(f"[AUDIO] {icon} Locked: {final_category.upper():<10} | "
+                              f"Raw: {raw_category:<12} | Speech: {voice}"
+                              + (" [Spike blocked]" if is_spike else ""))
                         last_category = display_cat
 
                 except Exception as e:
@@ -245,17 +246,17 @@ def run_calibration():
     import sounddevice as sd
     classifier = AudioClassifier()
     print("\n" + "="*50)
-    print("ANIMA 音频阈值校准（含 ZCR）")
+    print("ANIMA Audio Threshold Calibration (with ZCR)")
     print("="*50)
 
     def sample(label, seconds, instruction):
         print(f"\n{'─'*50}")
-        print(f"【场景】：{label}")
-        print(f"👉 {instruction}")
+        print(f"[Scene]: {label}")
+        print(f">> {instruction}")
         for i in range(3, 0, -1):
-            print(f"  倒计时 {i}...", end='\r')
+            print(f"  Countdown {i}...", end='\r')
             time.sleep(1)
-        print("  🟢 开始！")
+        print("  Recording...")
         rms_v, ratio_v, zcr_v, bass_v = [], [], [], []
         with sd.InputStream(samplerate=SAMPLE_RATE, channels=CHANNELS, dtype="int16") as stream:
             for _ in range(int(SAMPLE_RATE / CHUNK_SIZE * seconds)):
@@ -265,17 +266,17 @@ def run_calibration():
                 ratio_v.append(classifier.get_voice_ratio(audio_np))
                 zcr_v.append(classifier.get_zcr(audio_np))
                 bass_v.append(classifier.get_bass_ratio(audio_np))
-        print(f"  ✅ 完成")
+        print(f"  Done")
         print(f"     RMS:   min={min(rms_v):.0f}  max={max(rms_v):.0f}  avg={np.mean(rms_v):.0f}")
         print(f"     Voice: min={min(ratio_v):.2f}  max={max(ratio_v):.2f}  avg={np.mean(ratio_v):.2f}")
         print(f"     ZCR:   min={min(zcr_v):.3f}  max={max(zcr_v):.3f}  avg={np.mean(zcr_v):.3f}  std={np.std(zcr_v):.3f}")
         print(f"     Bass:  min={min(bass_v):.3f}  max={max(bass_v):.3f}  avg={np.mean(bass_v):.3f}")
         return rms_v, ratio_v, zcr_v, bass_v
 
-    silence_rms, _, _, _                          = sample("静音",   5, "保持绝对安静")
-    speech_rms,  speech_ratio, speech_zcr, speech_bass = sample("说话",   8, "正常音量持续说话")
-    music_rms,   _, music_zcr, music_bass          = sample("音乐",   8, "播放一首有人声的流行歌")
-    spike_rms,   _, _, _                           = sample("拍桌子", 5, "采样中途用力拍两下桌子")
+    silence_rms, _, _, _                               = sample("Silence",    5, "Stay completely silent")
+    speech_rms,  speech_ratio, speech_zcr, speech_bass = sample("Speech",     8, "Speak at normal volume continuously")
+    music_rms,   _, music_zcr, music_bass              = sample("Music",      8, "Play a pop song with vocals")
+    spike_rms,   _, _, _                               = sample("Table bang", 5, "Bang the table hard twice mid-sample")
 
     silence_max  = np.percentile(silence_rms, 95)
     speech_min   = np.percentile(speech_rms, 20)
@@ -289,7 +290,7 @@ def run_calibration():
     normal_avg     = np.mean(speech_rms)
 
     print("\n" + "="*50)
-    print("建议阈值 → 复制替换代码顶部")
+    print("Suggested thresholds — copy to top of file")
     print("="*50)
     print(f"SILENCE_THRESHOLD   = {int(max(50, silence_max * 1.3))}")
     print(f"SPEECH_THRESHOLD    = {int(speech_min * 0.8)}")
@@ -297,13 +298,13 @@ def run_calibration():
     print(f"VOICE_ENERGY_RATIO  = {max(0.2, speech_r_min - 0.1):.2f}")
     print(f"SPIKE_RATIO         = {max(2.5, spike_max / (normal_avg + 1) * 0.5):.1f}")
     print(f"SPIKE_MIN_RMS       = {int(max(200, silence_max * 2))}")
-    print(f"\n# ZCR 参数（说话={speech_z_avg:.3f}，音乐={music_z_avg:.3f}）")
+    print(f"\n# ZCR params (speech={speech_z_avg:.3f}, music={music_z_avg:.3f})")
     print(f"ZCR_SPEECH_MIN      = {max(0.03, music_z_avg * 1.1):.3f}")
     print(f"ZCR_VAR_MIN         = 0.02")
-    print(f"\n# Bass 参数（说话={speech_bass_avg:.3f}，音乐={music_bass_avg:.3f}）")
+    print(f"\n# Bass params (speech={speech_bass_avg:.3f}, music={music_bass_avg:.3f})")
     bass_threshold = (speech_bass_avg + music_bass_avg) / 2
-    print(f"BASS_MUSIC_RATIO    = {bass_threshold:.3f}  # 超过此值倾向音乐")
-    print(f"BASS_SPEECH_MAX     = {speech_bass_avg + 0.02:.3f}  # 说话低频上限")
+    print(f"BASS_MUSIC_RATIO    = {bass_threshold:.3f}  # Above this -> likely music")
+    print(f"BASS_SPEECH_MAX     = {speech_bass_avg + 0.02:.3f}  # Speech bass upper bound")
     print("="*50)
 
 

@@ -1,11 +1,10 @@
 """
-main.py — 更新版
-把 realtime_pipeline 和 context_pipeline 的情绪状态同步起来
+main.py
+Entry point for ANIMA. Starts all sensor threads, pipelines, and the web dashboard.
 """
 
 import time
 import threading
-import json
 from sense.sensor_state import shared_state
 from sense.face_tracker import run_face_tracker
 from sense.audio_detector import run_audio_detector
@@ -19,40 +18,37 @@ DEV_MODE = True
 
 if DEV_MODE:
     print("=" * 50)
-    print("  ANIMA v3 — 情绪持续 + 情绪专属 Idle")
+    print("  ANIMA v3 — Sustained Emotions + Emotion-Specific Idle")
     print("=" * 50)
 
 
 def main():
     bridge.connect()
 
-    # 初始 Relaxed
+    # Initialise to relaxed on startup
     bridge.send_emotion({"name": "relaxed", "r": 255, "g": 245, "b": 224})
 
     stop_event = threading.Event()
 
-    # ── 实时管线（需要在 on_emotion_change 里同步情绪）──────
+    # Realtime pipeline — face tracking, reflexes, idle triggers
     realtime_pipeline = RealtimePipeline(
         on_face_track=lambda yaw: bridge.send_track(yaw),
         on_reflex=lambda name, params: bridge.send_reflex(name, params),
-        on_idle=lambda: bridge.send_idle(0, 60, 25),  # idle 触发，Arduino 根据当前情绪处理
+        on_idle=lambda: bridge.send_idle(0, 60, 25),
     )
 
     def on_emotion_change(emotion_name: str, scenario: str, params: dict):
-        print(f"\n[MAIN] ✨ Emotion → {emotion_name} ({scenario})")
-        
+        print(f"\n[MAIN] Emotion → {emotion_name} ({scenario})")
         from express.study_manager import study_manager
         study_manager.record_emotion(emotion_name)
-        
-        # 发送情绪命令
         bridge.send_emotion(params)
 
     context_pipeline = ContextPipeline(on_emotion_change=on_emotion_change)
 
-    # ── Sense 线程 ──────────────────────────────────────────
+    # Sensor threads
     face_tracker_thread = threading.Thread(
         target=run_face_tracker, args=(stop_event,),
-        daemon=False,  # non-daemon: ensures cap.release() is called on exit
+        daemon=False,  # Non-daemon: ensures cap.release() is called on exit
         name="FaceTracker"
     )
     threads = [
@@ -60,19 +56,20 @@ def main():
         threading.Thread(target=run_audio_detector, args=(stop_event,), daemon=True, name="AudioDetector"),
         threading.Thread(target=run_input_monitor,  args=(stop_event,), daemon=True, name="InputMonitor"),
     ]
-    for t in threads: t.start()
+    for t in threads:
+        t.start()
 
     context_pipeline.start()
     realtime_pipeline.start()
 
-    # ── Start Web Dashboard ────────────────────────────────
+    # Web dashboard
     from web.server import start_dashboard
     start_dashboard(pipeline=context_pipeline, realtime_pipeline=realtime_pipeline)
 
     print("\n[MAIN] ANIMA running.")
-    print("  👉 Type 'phase1' to start 20-min recording")
-    print("  👉 Type 'phase2' to start replay from recording")
-    print("  👉 Press Ctrl+C to stop.\n")
+    print("  Type 'phase1' to start 20-min recording")
+    print("  Type 'phase2' to start manual replay")
+    print("  Press Ctrl+C to stop.\n")
 
     def command_listener():
         from express.study_manager import study_manager
@@ -89,9 +86,8 @@ def main():
                     study_manager.toggle_pause()
             except EOFError:
                 break
-                
-    cmd_thread = threading.Thread(target=command_listener, daemon=True)
-    cmd_thread.start()
+
+    threading.Thread(target=command_listener, daemon=True).start()
 
     try:
         while True:
@@ -103,14 +99,13 @@ def main():
             study_manager.print_analysis("Phase 1 (Interrupted)")
         elif study_manager.phase2_active:
             study_manager.print_analysis("Phase 2 (Interrupted)")
-            
+
         stop_event.set()
         context_pipeline.stop()
         realtime_pipeline.stop()
         bridge.disconnect()
-        face_tracker_thread.join(timeout=3)  # 等摄像头释放
+        face_tracker_thread.join(timeout=3)  # Wait for camera release
         print("[MAIN] Goodbye.")
-
 
 
 if __name__ == "__main__":

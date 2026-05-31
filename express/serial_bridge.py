@@ -1,5 +1,6 @@
 """
 express/serial_bridge.py
+Serial communication layer between Python and Arduino.
 """
 
 import json
@@ -51,7 +52,7 @@ class SerialBridge:
             self._connected = True
             return True
 
-    # ─── 情绪发送（供 context_pipeline 和 dashboard inject 调用）──
+    # ── Emotion command (called by context_pipeline and dashboard inject) ──
     def send_emotion(self, params: dict):
         self.current_emotion = params.get("name", "relaxed")
         cmd = {
@@ -66,12 +67,12 @@ class SerialBridge:
         }
         self._send(cmd)
 
-    # ─── 面部追踪 ──────────────────────────────────────────────
+    # ── Face tracking ──
     def send_track(self, yaw: int):
         face_x = (yaw - 20) / 80.0
         self._send({"type": "track", "face_x": face_x, "yaw": yaw})
 
-    # ─── 反射动作 ──────────────────────────────────────────────
+    # ── Reflex animation ──
     def send_reflex(self, reflex_name: str, params: dict):
         cmd = {
             "type": "reflex",
@@ -83,11 +84,11 @@ class SerialBridge:
         }
         self._send(cmd)
 
-    # ─── Idle 动作 ─────────────────────────────────────────────
+    # ── Idle animation trigger ──
     def send_idle(self, *args):
         self._send({"type": "idle"})
 
-    # ─── 底层串口发送 ──────────────────────────────────────────
+    # ── Low-level serial write ──
     def _send(self, cmd: dict):
         json_str = json.dumps(cmd) + "\n"
         if self._simulation_mode:
@@ -101,8 +102,8 @@ class SerialBridge:
                 self._serial.write(json_str.encode("utf-8"))
                 print(f"[EXPRESS] TX → {json_str.strip()}")
             except Exception as e:
+                # Serial disconnected mid-session (e.g. USB unplugged); fall back to simulation
                 print(f"[EXPRESS] Send error: {e} → switching to simulation mode")
-                # 串口中途断开（如 Arduino USB 拔掉），切换到模拟模式，避免抛异常
                 self._simulation_mode = True
                 self._serial = None
                 print(f"[EXPRESS] SIM → {json_str.strip()}")

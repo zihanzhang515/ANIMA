@@ -73,29 +73,29 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 from express.serial_bridge import bridge
                 from config.emotions import get_emotion
 
-                # ── 1. shared_state（网页显示用）──────────────────────
+                # 1. Update shared_state (for web display)
                 shared_state.force_update('current_emotion', emotion)
 
-                # ── 2. 同步 context_pipeline（重置 hold timer）────────
+                # 2. Sync context_pipeline (reset hold timer)
                 if context_pipeline_ref is not None:
                     import time as _t
                     context_pipeline_ref.current_emotion    = emotion
                     context_pipeline_ref.emotion_entered_at = _t.time() - 999
 
-                # ── 3. 同步 realtime_pipeline（防止 idle 覆盖）────────
+                # 3. Sync realtime_pipeline (prevent idle from overriding)
                 if realtime_pipeline_ref is not None:
                     realtime_pipeline_ref.set_emotion(emotion)
 
-                # ── 4. 发送 Arduino 指令 ──────────────────────────────
+                # 4. Send Arduino command
                 if emotion in ('alert', 'shy'):
-                    # 使用正确的 reflex_ 前缀 key 获取反射参数
+                    # Use the reflex_ prefix key to look up reflex parameters
                     params = get_emotion(f'reflex_{emotion}')
                     bridge.send_reflex(emotion, params)
                 else:
                     params = get_emotion(emotion)
                     bridge.send_emotion(params)
 
-                # ── 5. 同步记录到 Study 3 Phase 1 (如果是正在记录阶段) ──
+                # 5. Record to Study 3 Phase 1 log (if recording is active)
                 from express.study_manager import study_manager
                 if study_manager.phase1_active and emotion not in ('alert', 'shy'):
                     study_manager.record_emotion(emotion)

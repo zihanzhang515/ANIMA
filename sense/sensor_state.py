@@ -3,11 +3,11 @@ sense/sensor_state.py
 ---------------------
 Thread-safe shared state for all 5 sensor signals.
 
-v2 改动：
-  - 新增 audio_spike 字段（Alert reflex 需要）
-  - 新增内部时间追踪：last_high_activity_time / input_zero_since / session_start_time
-  - 新增查询方法：get_inactive_duration() / was_recently_active() / get_session_duration()
-  - update() 自动维护时间追踪，外部模块无需额外操作
+Changes in v2:
+  - Added audio_spike field (required by Alert reflex)
+  - Added internal time tracking: last_high_activity_time / input_zero_since / session_start_time
+  - Added query methods: get_inactive_duration() / was_recently_active() / get_session_duration()
+  - update() maintains time tracking automatically; external modules need no extra calls
 """
 
 import threading
@@ -18,33 +18,33 @@ class SensorState:
     def __init__(self):
         self._lock = threading.Lock()
 
-        # ── 五个核心信号 ──
+        # ── Five core signals ──
         self._state = {
-            "face_present":   False,   # S1
-            "face_x":         0.5,     # S2  (0.0=左 / 0.5=中 / 1.0=右)
-            "face_size":      0.0,     # S2b 人脸视在大小（bbox.width），代理靠近距离
-            "speech_active":  False,   # S3
+            "face_present":   False,      # S1
+            "face_x":         0.5,        # S2  (0.0=left / 0.5=centre / 1.0=right)
+            "face_size":      0.0,        # S2b  apparent face size (bbox.width), proxy for proximity
+            "speech_active":  False,      # S3
             "audio_category": "silence",  # S4  silence/speech/music/alert_spike
-            "audio_spike":    False,   # S4b  突发声音，Alert reflex 专用
+            "audio_spike":    False,      # S4b  sudden sound burst, used by Alert reflex
             "audio_rms":      0.0,
-            "input_rate":     "low",   # S5   low/medium/high
-            "current_emotion":"relaxed",
+            "input_rate":     "low",      # S5  low/medium/high
+            "current_emotion": "relaxed",
             "last_updated":   time.time(),
         }
 
-        # ── 前一帧快照（用于 transition 检测）──
+        # ── Previous-frame snapshot (used for transition detection) ──
         self._prev_state = self._state.copy()
 
-        # ── 时间追踪（内部，不暴露到 _state）──
-        # 上次 input_rate 是 high/medium 的时间戳
+        # ── Internal time tracking (not exposed in _state) ──
+        # Timestamp of the last high/medium input_rate event
         self._last_high_activity_time: float = 0.0
         self._high_activity_start_time: float = 0.0
-        # input_rate 变成 low 的时间戳（用于 Curious/Confused 区分）
+        # Timestamp when input_rate dropped to low (used for Curious/Confused distinction)
         self._input_zero_since: float = 0.0
-        # 用户本次出现的时间戳（face_present 从 False→True）
+        # Timestamp when the user first appeared (face_present: False → True)
         self._session_start_time: float = 0.0
         self._face_absent_since: float = 0.0
-        # 当前 state 起始时间（用于 min_duration 检查）
+        # Start time of the current state (used for min_duration checks)
         self._state_start_time: float = time.time()
 
     # ─────────────────────────────────────────
@@ -52,7 +52,7 @@ class SensorState:
     # ─────────────────────────────────────────
 
     def update(self, key: str, value):
-        """更新单个信号，自动维护时间追踪。"""
+        """Update a single signal; time tracking is maintained automatically."""
         with self._lock:
             if key not in self._state:
                 return
@@ -63,19 +63,19 @@ class SensorState:
             self._state["last_updated"] = time.time()
             now = time.time()
 
-            # ── input_rate 变化时维护时间追踪 ──
+            # ── Maintain time tracking on input_rate change ──
             if key == "input_rate":
                 if value in ("high", "medium"):
                     self._last_high_activity_time = now
-                    self._input_zero_since = 0.0   # 重置归零计时
+                    self._input_zero_since = 0.0   # Reset inactivity timer
                     if getattr(self, "_high_activity_start_time", 0.0) == 0.0:
                         self._high_activity_start_time = now
                 elif value == "low":
                     self._high_activity_start_time = 0.0
                     if self._input_zero_since == 0.0:
-                        self._input_zero_since = now  # 开始计归零时长
+                        self._input_zero_since = now  # Begin inactivity timing
 
-            # ── face_present 从 False→True 时重置 session 计时 ──
+            # ── Reset session timer when face_present transitions False → True ──
             if key == "face_present":
                 if value is True:
                     self._session_start_time = now
@@ -90,7 +90,7 @@ class SensorState:
     # ─────────────────────────────────────────
 
     def force_update(self, key: str, value):
-        """强制更新，即使值相同也写入（用于初始化广播）。"""
+        """Force-write a value even if unchanged (used for initialisation broadcast)."""
         with self._lock:
             if key not in self._state:
                 return
@@ -98,12 +98,12 @@ class SensorState:
             self._state["last_updated"] = time.time()
 
     def get(self) -> dict:
-        """当前信号快照（线程安全副本）。"""
+        """Return a thread-safe copy of the current signal snapshot."""
         with self._lock:
             return self._state.copy()
 
     def get_prev(self) -> dict:
-        """上一帧快照。"""
+        """Return the previous-frame snapshot."""
         with self._lock:
             return self._prev_state.copy()
 
@@ -127,12 +127,10 @@ class SensorState:
         """当前状态已持续多少秒。"""
         return time.time() - self._state_start_time
 
-    # ─────────────────────────────────────────
-    # 时间维度查询（Curious/Confused/Tired 专用）
-    # ─────────────────────────────────────────
+    # ── Time-dimension queries (used by Curious/Confused/Tired logic) ──────
 
     def get_active_duration(self) -> float:
-        """连续保持 high/medium 活跃的秒数"""
+        """Seconds of continuous high/medium input activity."""
         with self._lock:
             start_time = getattr(self, "_high_activity_start_time", 0.0)
             if start_time == 0.0:
@@ -141,9 +139,9 @@ class SensorState:
 
     def get_inactive_duration(self) -> float:
         """
-        input_rate 归零（low）已经多少秒了。
-        用于区分 Curious（<90s）和 Confused（>180s）。
-        返回 0 表示当前还在活跃或从未活跃过。
+        Seconds since input_rate dropped to low.
+        Used to distinguish Curious (<90s) from Confused (>180s).
+        Returns 0 if currently active or never been active.
         """
         with self._lock:
             if self._input_zero_since == 0.0:
@@ -152,8 +150,8 @@ class SensorState:
 
     def was_recently_active(self, window_sec: float = 300.0) -> bool:
         """
-        过去 window_sec 秒内，有没有出现过 high/medium 活跃状态。
-        用于区分 Relaxed（从来没高活跃）和 Curious/Confused（之前高活跃过）。
+        Returns True if there has been any high/medium activity within the past window_sec seconds.
+        Used to distinguish Relaxed (never active) from Curious/Confused (was previously active).
         """
         with self._lock:
             if self._last_high_activity_time == 0.0:
@@ -161,7 +159,7 @@ class SensorState:
             return (time.time() - self._last_high_activity_time) < window_sec
 
     def get_absent_duration(self) -> float:
-        """用户离开（不在场）的连续秒数。"""
+        """Seconds the user has been continuously absent (face not detected)."""
         with self._lock:
             start = getattr(self, "_face_absent_since", 0.0)
             if start == 0.0:
@@ -170,8 +168,8 @@ class SensorState:
 
     def get_session_duration(self) -> float:
         """
-        用户本次在场的累计秒数（face_present 持续时间）。
-        用于 Tired 的累计工时触发（30分钟）。
+        Seconds the user has been continuously present (face_present duration).
+        Used to trigger Tired based on accumulated session time (30 minutes in production).
         """
         with self._lock:
             if self._session_start_time == 0.0:
@@ -179,7 +177,7 @@ class SensorState:
             return time.time() - self._session_start_time
 
     def get_face_x_zone(self) -> str:
-        """把 face_x 浮点数转成 left/center/right 区域。"""
+        """Convert face_x float to a zone label: left / center / right."""
         with self._lock:
             x = self._state["face_x"]
         if x < 0.35:
@@ -189,6 +187,6 @@ class SensorState:
         return "center"
 
 
-# 全局单例
+# Global singleton
 shared_state = SensorState()
 

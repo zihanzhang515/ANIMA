@@ -1,14 +1,14 @@
 """
 understand/context_pipeline.py
--------------------------------
-慢速理解层：每 CHECK_INTERVAL 秒评估一次场景。
+--------------------------------
+Slow understanding layer: evaluates the scene every CHECK_INTERVAL seconds.
 
-v2 改动：
-  - 接入 sensor_state 的三个时间查询方法
-  - 新增 Curious/Confused 时间维度区分逻辑
-  - 新增 Tired session duration 检查
-  - match_context() 现在传入 session_duration_sec
-  - 测试模式和正式模式双参数切换
+Changes in v2:
+  - Integrated three time-query methods from sensor_state
+  - Added Curious/Confused time-dimension distinction logic
+  - Added Tired session-duration check
+  - match_context() now receives session_duration_sec
+  - Dual parameter sets for test mode and production mode
 """
 
 import time
@@ -18,25 +18,23 @@ from sense.sensor_state import shared_state
 from config.context_rules_study import CONTEXT_RULES, match_context
 from config.emotions import get_emotion
 
-# ─────────────────────────────────────────
-# 模式切换（改这一行切换所有时间参数）
-# ─────────────────────────────────────────
-MODE = "test"   # "test" 快速验证  |  "real" 正式使用
+# ── Mode switch (change this one line to toggle all timing parameters) ──
+MODE = "test"   # "test" = fast validation  |  "real" = production
 
 if MODE == "test":
-    CHECK_INTERVAL   = 7      # 每7秒评估一次（配合 CONFIRM_THRESHOLD=2，需14s确认）
-    CURIOUS_WINDOW   = 10     # 归零 <10秒 → Curious
-    CONFUSED_WINDOW  = 30     # 归零 >30秒 → Confused (原 20s 太短，导致 curious 被跳过)
-    ACTIVE_LOOKBACK  = 60     # 过去1分钟内有没有高活跃
-    TIRED_SESSION    = 600    # 在场10分钟 → Tired（测试用，之前60s太短了）
-    TIRED_HOUR       = 20     # 晚8点（测试用）
+    CHECK_INTERVAL   = 7      # Evaluate every 7s (with CONFIRM_THRESHOLD=2, confirmation takes 14s)
+    CURIOUS_WINDOW   = 10     # Inactive < 10s → Curious
+    CONFUSED_WINDOW  = 30     # Inactive > 30s → Confused
+    ACTIVE_LOOKBACK  = 60     # Check for high activity within the past 1 minute
+    TIRED_SESSION    = 600    # Present for 10 minutes → Tired (test value)
+    TIRED_HOUR       = 20     # 8 PM (test value)
 else:
-    CHECK_INTERVAL   = 30     # 每30秒评估一次
-    CURIOUS_WINDOW   = 90     # 归零 <90秒 → Curious
-    CONFUSED_WINDOW  = 180    # 归零 >180秒 → Confused
-    ACTIVE_LOOKBACK  = 300    # 过去5分钟内有没有高活跃
-    TIRED_SESSION    = 1800   # 在场30分钟 → Tired
-    TIRED_HOUR       = 23     # 23:00（正式）
+    CHECK_INTERVAL   = 30     # Evaluate every 30s
+    CURIOUS_WINDOW   = 90     # Inactive < 90s → Curious
+    CONFUSED_WINDOW  = 180    # Inactive > 180s → Confused
+    ACTIVE_LOOKBACK  = 300    # Check for high activity within the past 5 minutes
+    TIRED_SESSION    = 1800   # Present for 30 minutes → Tired
+    TIRED_HOUR       = 23     # 11 PM (production)
 
 
 class ContextPipeline:
@@ -49,37 +47,35 @@ class ContextPipeline:
         self.current_scenario   = "Default"
         self.emotion_entered_at = time.time()
 
-        # 每个情绪的最短持续时间（秒）
-        # 在此时间内，即使信号变化也不切换情绪
+        # Minimum hold time per emotion (seconds).
+        # Prevents switching away too quickly even if signals change.
         self.EMOTION_MIN_HOLD = {
-            "focus":    45,   # focus 至少持续 45s，不要一停打字就消失
-            "happy":    30,   # happy 至少持续 30s
-            "curious":  20,   # curious 保持 20s
-            "tired":    30,   # tired 不要太快消失
-            "confused": 30,   # confused 保持 30s
+            "focus":    45,   # Focus: hold at least 45s; don't drop just because typing paused
+            "happy":    30,
+            "curious":  20,
+            "tired":    30,
+            "confused": 30,
             "listen":   15,
             "relaxed":  0,
         }
 
-        # 情绪最长持续时间 → 超时后自动回归 relaxed（"一次性提醒"语义）
-        # None 表示不限制（情绪会一直保持直到被新信号覆盖）
+        # Maximum hold time per emotion → force return to relaxed on expiry ("one-shot notification" semantics).
+        # None means unlimited (emotion persists until overridden by a new signal).
         self.EMOTION_MAX_HOLD = {
-            "tired":    120,  # tired 最多 2 分钟，然后"提醒过了"→ 回 relaxed
-            "curious":  60,   # curious 最多 1 分钟，如果没有新活跃 → 回 relaxed
-            "confused": 120,  # confused 最多 2 分钟 → 回 relaxed
+            "tired":    120,  # Tired: max 2 minutes, then "already notified" → relaxed
+            "curious":  60,   # Curious: max 1 minute without new activity → relaxed
+            "confused": 120,  # Confused: max 2 minutes → relaxed
         }
 
-        # 候选确认机制：同一情绪连续出现 N 次才正式切换（防抖）
+        # Candidate confirmation: the same emotion must appear N consecutive times before switching (debounce).
         self._pending_emotion   = None
         self._pending_scenario  = None
         self._pending_count     = 0
-        self.CONFIRM_THRESHOLD  = 2   # 需要连续 2 次评估确认，CHECK_INTERVAL=7s，即 14s 内都触发才切换
+        self.CONFIRM_THRESHOLD  = 2   # 2 consecutive evaluations required; at CHECK_INTERVAL=7s, that is 14s
 
         self._stop_event = threading.Event()
 
-    # ─────────────────────────────────────────
-    # 线程管理
-    # ─────────────────────────────────────────
+    # ── Thread management ──────────────────────────────────────────────────
 
     def start(self):
         thread = threading.Thread(
@@ -99,15 +95,13 @@ class ContextPipeline:
             time.sleep(CHECK_INTERVAL)
             self._evaluate()
 
-    # ─────────────────────────────────────────
-    # 核心评估逻辑
-    # ─────────────────────────────────────────
+    # ── Core evaluation logic ──────────────────────────────────────────────
 
     def _evaluate(self):
         from express.study_manager import study_manager
         if study_manager.is_paused:
             return
-            
+
         current          = shared_state.get()
         previous         = shared_state.get_prev()
         session_duration = shared_state.get_session_duration()
@@ -117,24 +111,22 @@ class ContextPipeline:
         was_active       = shared_state.was_recently_active(ACTIVE_LOOKBACK)
 
         changes = shared_state.count_changes()
-        print(f"\n[UNDERSTAND] ── 评估 ── {changes} 个信号变化")
+        print(f"\n[UNDERSTAND] ── Evaluate ── {changes} signal change(s)")
         print(f"  face={current['face_present']} | speech={current['speech_active']} | "
               f"audio={current['audio_category']} | input={current['input_rate']}")
         print(f"  inactive={inactive_secs:.0f}s | session={session_duration:.0f}s | "
               f"was_active={was_active}")
 
-        # ── 第一步：基础规则匹配 ──
+        # Step 1: Base rule matching
         new_emotion, new_scenario = match_context(current, previous, inactive_secs)
 
-        # ── 第二步：时间维度覆盖逻辑 ──
+        # Step 2: Time-dimension overrides
         new_emotion, new_scenario = self._apply_time_overrides(
             new_emotion, new_scenario,
             current, inactive_secs, was_active, session_duration, active_secs, absent_secs
         )
 
-        # ── 第二步.5：记忆预判 ──────────────────────────────────────────────
-        # 仅当信号层结果是 relaxed（无强触发）且人在场时才检查
-        # [Study 3 临时修改]：为了单独测试每个情绪触发机制，暂时禁用记忆预判
+        # Step 2.5: Memory anticipation (disabled for Study 3 to isolate individual triggers)
         """
         if new_emotion == "relaxed" and current["face_present"]:
             try:
@@ -142,45 +134,44 @@ class ContextPipeline:
                 now_dt = datetime.datetime.now()
                 preemptive = get_preemptive_emotion(now_dt.hour, now_dt.weekday())
                 if preemptive and preemptive != self.current_emotion:
-                    print(f"[UNDERSTAND] 🧠 记忆预判：{preemptive}（{now_dt.hour:02d}:xx 的习惯）")
+                    print(f"[UNDERSTAND] Memory anticipation: {preemptive} ({now_dt.hour:02d}:xx habit)")
                     new_emotion = preemptive
                     new_scenario = "Memory Anticipated"
             except Exception as mem_err:
-                print(f"[UNDERSTAND] 记忆预判查询失败: {mem_err}")
+                print(f"[UNDERSTAND] Memory anticipation query failed: {mem_err}")
         """
 
-        # ── 第三步：生成 token（原始数据到此止步）──
+        # Step 3: Generate token (raw sensor data is discarded here)
         token = self._generate_token(current, new_emotion, new_scenario)
         print(f"[UNDERSTAND] Token: {token}")
 
-        # ── 同时追加写入 token 日志文件 ──
+        # Append token to log file
         try:
             import os
             log_dir  = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "logs")
             os.makedirs(log_dir, exist_ok=True)
             log_path = os.path.join(log_dir, "token_log.txt")
-            ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # 用文件顶部已 import 的 datetime
+            ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             with open(log_path, "a", encoding="utf-8") as lf:
                 lf.write(f"[{ts}] {token}\n")
         except Exception as log_err:
             print(f"[UNDERSTAND] Token log write failed: {log_err}")
 
-        # ── 第四步：写入记忆 ──
-        # [Study 3 临时修改]：只有明确的情绪（非 relaxed）才写入记忆数据库，避免无意义的记录
+        # Step 4: Write to memory (only non-relaxed emotions)
+        # Study 3: restricted to explicit emotions to avoid noise records
         if new_emotion != "relaxed":
             try:
                 from memory.memory_store import save_event
                 save_event(token, new_emotion, new_scenario, current)
             except Exception as e:
-                print(f"[UNDERSTAND] 记忆写入失败: {e}")
+                print(f"[UNDERSTAND] Memory write failed: {e}")
 
-        # ── 第五步：候选确认 + 情绪切换 ──
-        # 先用 pending 机制做防抖：同一情绪连续出现 CONFIRM_THRESHOLD 次才切换
-        # ── 最长持续时间检查：超时强制回 relaxed ──────────────────
+        # Step 5: Candidate confirmation + emotion switch
+        # Check max hold: force return to relaxed if current emotion has expired
         time_in_current = time.time() - self.emotion_entered_at
         max_hold = self.EMOTION_MAX_HOLD.get(self.current_emotion)
         if max_hold and time_in_current >= max_hold:
-            print(f"[UNDERSTAND] ⏰ {self.current_emotion} 超过最长时间 {max_hold}s → 回归 relaxed")
+            print(f"[UNDERSTAND] {self.current_emotion} exceeded max hold {max_hold}s → relaxed")
             self.current_emotion    = "relaxed"
             self.current_scenario   = "Idle Ambient"
             self.emotion_entered_at = time.time()
@@ -197,27 +188,26 @@ class ContextPipeline:
             if new_emotion == self._pending_emotion:
                 self._pending_count += 1
             else:
-                # 新候选，重置计数
+                # New candidate; reset count
                 self._pending_emotion  = new_emotion
                 self._pending_scenario = new_scenario
                 self._pending_count    = 1
 
             if self._pending_count >= self.CONFIRM_THRESHOLD:
-                # 候选确认：检查 min_hold
+                # Candidate confirmed: check min hold
                 time_in_current = time.time() - self.emotion_entered_at
                 min_hold = self.EMOTION_MIN_HOLD.get(self.current_emotion, 0)
 
                 if time_in_current < min_hold:
-                    print(f"[UNDERSTAND] 忽略切换：{self.current_emotion} 只持续了 "
-                          f"{int(time_in_current)}s（最少需要 {min_hold}s）")
+                    print(f"[UNDERSTAND] Switch blocked: {self.current_emotion} only held "
+                          f"{int(time_in_current)}s (min {min_hold}s required)")
                 else:
-                    print(f"[UNDERSTAND] ✅ 情绪切换（{self._pending_count}次确认）："
+                    print(f"[UNDERSTAND] Emotion switch ({self._pending_count} confirmations): "
                           f"{self.current_emotion} → {new_emotion} ({new_scenario})")
                     self.current_emotion    = new_emotion
                     self.current_scenario   = new_scenario
                     self.emotion_entered_at = time.time()
                     shared_state.update("current_emotion", new_emotion)
-                    # 重置候选
                     self._pending_emotion = None
                     self._pending_count   = 0
 
@@ -225,23 +215,18 @@ class ContextPipeline:
                         params = get_emotion(new_emotion)
                         self.on_emotion_change(new_emotion, new_scenario, params)
             else:
-                print(f"[UNDERSTAND] 📋 候选({self._pending_count}/{self.CONFIRM_THRESHOLD}）："
-                      f"{self.current_emotion} → {new_emotion}，等待确认")
+                print(f"[UNDERSTAND] Candidate ({self._pending_count}/{self.CONFIRM_THRESHOLD}): "
+                      f"{self.current_emotion} → {new_emotion}, awaiting confirmation")
         else:
-            # 当前情绪 == 新情绪，重置候选
+            # Current emotion confirmed; reset candidate
             self._pending_emotion = None
             self._pending_count   = 0
-            print(f"[UNDERSTAND] 情绪不变：{self.current_emotion}")
+            print(f"[UNDERSTAND] Emotion unchanged: {self.current_emotion}")
 
-        # 更新 shared_state，网页轮询使用
         shared_state.update("current_emotion", self.current_emotion)
         shared_state.save_snapshot()
 
-
-
-    # ─────────────────────────────────────────
-    # 时间维度覆盖
-    # ─────────────────────────────────────────
+    # ── Time-dimension overrides ───────────────────────────────────────────
 
     def _apply_time_overrides(
         self,
@@ -255,115 +240,107 @@ class ContextPipeline:
         absent_secs: float
     ) -> tuple:
         """
-        在规则表匹配结果的基础上，应用时间维度逻辑。
+        Apply time-dimension logic on top of the rule-table match result.
 
-        主要处理四种情况：
-        1. Curious vs Confused：靠 inactive_secs 区分
-        2. Tired：session_duration 超过阈值时触发
-        3. Relaxed vs Curious：如果从来没活跃过，不应该是 Curious
-        4. Focus / Happy：靠 active_secs 判断持续时间
-        5. Long Absence：靠 absent_secs 判断
+        Handles four cases:
+        1. Curious vs Confused: distinguished by inactive_secs
+        2. Tired: triggered when session_duration exceeds threshold
+        3. Relaxed vs Curious: no prior active period → not Curious
+        4. Focus / Happy: require minimum active_secs
+        5. Long Absence: validated by absent_secs
         """
-        
-        # ── 覆盖-1：过早的离开（防闪烁） ──────────────
+
+        # Override 1: Long Absence guard (prevent flicker)
         if scenario == "Long Absence":
             absent_target = 60 if MODE == "test" else 1800
             if absent_secs < absent_target:
-                print(f"[UNDERSTAND] 时间拦截：离开 {absent_secs:.0f}s < {absent_target}s → 保持 relaxed")
+                print(f"[UNDERSTAND] Time intercept: absent {absent_secs:.0f}s < {absent_target}s → relaxed")
                 return "relaxed", "Idle Ambient"
 
-        # ── 覆盖-0.5：主动检测发呵/庄 —— 不依赖 match_context 的结果 ────────
-        # 无论 match_context 返回什么，只要 was_active+input=low，就主动判断 curious/confused
+        # Override 0.5: Proactive curious/confused detection
+        # Regardless of rule-table result, if was_active + input=low, evaluate directly
         if (current["face_present"]
                 and was_active
                 and not current["speech_active"]
                 and current["input_rate"] == "low"):
             if inactive_secs >= CONFUSED_WINDOW:
-                print(f"[UNDERSTAND] 主动检测：停止活跃 {inactive_secs:.0f}s ≥ {CONFUSED_WINDOW}s → confused")
+                print(f"[UNDERSTAND] Proactive: inactive {inactive_secs:.0f}s >= {CONFUSED_WINDOW}s → confused")
                 return "confused", "Stuck"
             elif inactive_secs >= CURIOUS_WINDOW:
-                print(f"[UNDERSTAND] 主动检测：停止活跃 {inactive_secs:.0f}s ≥ {CURIOUS_WINDOW}s → curious")
+                print(f"[UNDERSTAND] Proactive: inactive {inactive_secs:.0f}s >= {CURIOUS_WINDOW}s → curious")
                 return "curious", "Daydreaming"
-            # inactive_secs < CURIOUS_WINDOW 时不干预，继续走后面逻辑
+            # inactive_secs < CURIOUS_WINDOW: no intervention, continue to next checks
 
-        # ── 覆盖0：Focus 和 Happy 长时间要求 ────────────────
+        # Override 0: Focus and Happy require minimum active duration
         if emotion == "focus":
             focus_target = 30 if MODE == "test" else 600
             if active_secs < focus_target:
-                print(f"[UNDERSTAND] 时间拦截：活跃 {active_secs:.0f}s < {focus_target}s，Focus不成立 → 保持 relaxed")
+                print(f"[UNDERSTAND] Time intercept: active {active_secs:.0f}s < {focus_target}s, focus not valid → relaxed")
                 return "relaxed", "Idle Ambient"
-                
+
         if emotion == "happy":
             if previous.get("current_emotion") == "tired":
-                print("[UNDERSTAND] 拦截突变：不能从 tired 直接转入 happy → 维持 tired缓冲")
+                print("[UNDERSTAND] Transition blocked: cannot jump directly from tired to happy → hold tired")
                 return "tired", "Fatigue"
-            
+
             happy_target = 15 if MODE == "test" else 60
             if active_secs < happy_target:
-                print(f"[UNDERSTAND] 时间拦截：活跃 {active_secs:.0f}s < {happy_target}s，Happy不成立 → 保持 relaxed")
+                print(f"[UNDERSTAND] Time intercept: active {active_secs:.0f}s < {happy_target}s, happy not valid → relaxed")
                 return "relaxed", "Idle Ambient"
 
         if emotion == "tired" and scenario == "Fatigue":
             tired_target = 45 if MODE == "test" else 480
             if session_duration < tired_target:
-                print(f"[UNDERSTAND] 时间拦截：在场 {session_duration:.0f}s < {tired_target}s，Tired不成立 → 保持 relaxed")
+                print(f"[UNDERSTAND] Time intercept: session {session_duration:.0f}s < {tired_target}s, tired not valid → relaxed")
                 return "relaxed", "Idle Ambient"
 
-        # ── 覆盖1：Curious vs Confused 时间区分 ──────────────
-        # 规则表里两个都依赖 requires_transition_from，
-        # 这里用时间精确区分
+        # Override 1: Curious vs Confused — time-based distinction
         if emotion in ("curious", "confused"):
             if not was_active:
-                # 过去 ACTIVE_LOOKBACK 秒内从来没高活跃过
-                # 说明用户本来就一直在低活跃，不是"停下来了"
-                # 应该是 Relaxed 而不是 Curious
-                print(f"[UNDERSTAND] 覆盖：{emotion} → relaxed（无前置活跃期）")
+                # No high activity in the past ACTIVE_LOOKBACK seconds:
+                # user was already low-activity, not "stopped" — should be Relaxed, not Curious
+                print(f"[UNDERSTAND] Override: {emotion} → relaxed (no prior active period)")
                 return "relaxed", "Idle Ambient"
 
             if inactive_secs == 0.0:
-                # 目前还在活跃，不是 Curious/Confused 状态
+                # Currently still active; neither state applies
                 pass
 
             elif inactive_secs < CURIOUS_WINDOW:
-                # 刚停下来不到 CURIOUS_WINDOW 秒 → Curious
-                print(f"[UNDERSTAND] 时间覆盖：归零 {inactive_secs:.0f}s < {CURIOUS_WINDOW}s → curious")
+                print(f"[UNDERSTAND] Time override: inactive {inactive_secs:.0f}s < {CURIOUS_WINDOW}s → curious")
                 return "curious", "Active Break"
 
             elif inactive_secs >= CONFUSED_WINDOW:
-                # 停了很久 → Confused
-                print(f"[UNDERSTAND] 时间覆盖：归零 {inactive_secs:.0f}s >= {CONFUSED_WINDOW}s → confused")
+                print(f"[UNDERSTAND] Time override: inactive {inactive_secs:.0f}s >= {CONFUSED_WINDOW}s → confused")
                 return "confused", "Stuck"
 
             else:
-                # 灰色地带（CURIOUS_WINDOW ~ CONFUSED_WINDOW）→ 维持 Curious 等待
-                print(f"[UNDERSTAND] 时间覆盖：归零 {inactive_secs:.0f}s 在灰色地带 → 维持 curious")
+                # Grey zone (CURIOUS_WINDOW ~ CONFUSED_WINDOW): hold as curious
+                print(f"[UNDERSTAND] Time override: inactive {inactive_secs:.0f}s in grey zone → hold curious")
                 return "curious", "Active Break"
 
-        # ── 覆盖2：session duration 触发 Tired ────────────────
-        # 连续在场超过 TIRED_SESSION 秒触发，但如果已经是 tired 就不再强制（让其他情绪能切换）
-        # 在 test 模式下完全禁用此覆盖，用下面的注释行启用
-        if MODE != "test":   # test 模式下不靠 session 强制 tired，只靠 Late Night 规则
+        # Override 2: Session duration → Tired (production mode only)
+        # In test mode, tired is triggered only via the Late Night rule
+        if MODE != "test":
             if (current["face_present"]
                     and session_duration >= TIRED_SESSION
                     and current["input_rate"] in ("low", "medium")
                     and not current["speech_active"]
                     and emotion not in ("happy", "listen", "focus", "tired")):
-                print(f"[UNDERSTAND] 时间覆盖：在场 {session_duration:.0f}s → tired")
+                print(f"[UNDERSTAND] Time override: session {session_duration:.0f}s → tired")
                 return "tired", "Extended Session"
 
         return emotion, scenario
 
-    # ─────────────────────────────────────────
-    # Token 生成（隐私保护：原始数据在此丢弃）
-    # ─────────────────────────────────────────
+    # ── Token generation (raw data is discarded here) ─────────────────────
 
     def _generate_token(self, state: dict, emotion: str, scenario: str) -> str:
         """
-        生成抽象记忆 token。
-        格式：<场景, HH:00, Weekday/Weekend, 情绪>
+        Generate an abstract memory token.
+        Format: <scenario, HH:00, Weekday/Weekend, emotion>
 
-        原始传感器数据不存储，只存这个抽象标签。
-        这是隐私保护的关键步骤。
+        Raw sensor data is not stored — only this abstract label.
+        This is the key privacy-preserving step.
         # RAW SENSOR DATA DISCARDED HERE
         """
         now      = datetime.datetime.now()

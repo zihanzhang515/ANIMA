@@ -18,8 +18,8 @@ EVALUATION_WINDOW = 10
 
 # Event count thresholds for classification
 # Tune these based on your typical typing speed
-HIGH_THRESHOLD = 40     # 40+ events per 10s = high activity (原30太容易达到)
-MEDIUM_THRESHOLD = 5    # 5-40 events per 10s = medium activity (原8要求太高，容易掉到low)
+HIGH_THRESHOLD   = 40   # 40+ events per 10s = high activity
+MEDIUM_THRESHOLD = 5    # 5-40 events per 10s = medium activity
                         # < 5 events per 10s = low activity
 
 # Thread-safe counter

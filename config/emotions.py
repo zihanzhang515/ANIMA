@@ -1,31 +1,31 @@
 """
-config/emotions.py — 最终校准版
-────────────────────────────────
-校准结果（2026-05-01）：
-  Yaw：60° = 正前方，范围 0-180°
-  Pitch：20° = 水平中立，范围 0-40°（物理限制，约 ±20°）
-  右耳：0° = 朝前，数字越大越往后折
-  左耳：物理角度 = 90 - 逻辑角度（EAR_L_NEUTRAL = 90）
+config/emotions.py — Final calibrated values
+─────────────────────────────────────────────
+Calibration (2026-05-01):
+  Yaw:   60° = straight ahead, range 0–180°
+  Pitch: 25° = horizontal neutral, range 0–40° (physical limit ≈ ±20°)
+  Right ear: 0° = forward, higher values fold further back
+  Left ear:  physical angle = 90 - logical angle  (EAR_L_NEUTRAL = 90)
 """
 
 CALIBRATION = {
-    "pitch_base": 20,   # 水平中立
-    "pitch_min":  0,    # 抬头极限
-    "pitch_max":  40,   # 低头极限
-    "yaw_center": 60,   # 正前方
+    "pitch_base": 25,   # Horizontal neutral (matches Arduino basePitch)
+    "pitch_min":  0,    # Full tilt up
+    "pitch_max":  40,   # Full tilt down
+    "yaw_center": 60,   # Straight ahead
     "yaw_min":    0,
     "yaw_max":    180,
 }
 
 EMOTION_PARAMS = {
 
-    # ── Tier 1：持续情绪 ──────────────────────────────────────
+    # ── Tier 1: Sustained emotions ────────────────────────────────────────
 
     "relaxed": {
         "tier": 1,
         "ear":          0,
-        "yaw":          60,     # 正前方
-        "pitch_offset": 0,      # 20°（水平）
+        "yaw":          60,     # Straight ahead
+        "pitch_offset": 0,      # 25° (horizontal neutral)
         "r": 255, "g": 245, "b": 224,
         "is_default": True,
     },
@@ -33,72 +33,72 @@ EMOTION_PARAMS = {
     "curious": {
         "tier": 1,
         "ear":          0,
-        "yaw":          45,     # 左转 15°
-        "pitch_offset": -5,     # 15°（微抬头）
+        "yaw":          45,     # 15° left turn
+        "pitch_offset": -5,     # 20° (slight head raise)
         "r": 0, "g": 200, "b": 200,
     },
 
     "happy": {
         "tier": 1,
-        "ear":          0,      # 配合扇动动画
-        "yaw":          60,     # 居中，配合 ±8° 摆动（52°↔68°）
-        "pitch_offset": 0,      # 20°（水平）
+        "ear":          0,      # Ears animate during idle (flap to 8°)
+        "yaw":          60,     # Centre; idle oscillates ±8° (52°↔68°)
+        "pitch_offset": 0,      # 25° (horizontal neutral)
         "r": 255, "g": 140, "b": 0,
     },
 
     "focus": {
         "tier": 1,
-        "ear":          90,     # 耳朵折后
-        "yaw":          60,     # 中心锁定
-        "pitch_offset": 0,      # 20°（水平）
+        "ear":          90,     # Ears folded back
+        "yaw":          60,     # Locked centre
+        "pitch_offset": 0,      # 25° (horizontal neutral)
         "r": 0, "g": 50, "b": 180,
     },
 
     "tired": {
         "tier": 1,
-        "ear":          110,    # 大幅折后
+        "ear":          110,    # Ears heavily folded back
         "yaw":          60,
-        "pitch_offset": 15,     # 35°（低头，接近极限）
-        "r": 120, "g": 70, "b": 0,   # 暗黄色（欲警）
+        "pitch_offset": 15,     # 40° (head drooped, near limit)
+        "r": 120, "g": 70, "b": 0,   # Dim amber
     },
 
     "confused": {
         "tier": 1,
-        "ear_left":     80,     # 左耳折后
-        "ear_right":    0,      # 右耳朝前
-        "ear":          40,     # fallback
-        "yaw":          60,
-        "pitch_offset": -5,     # 15°（微抬头，思考姿态）
-        "r": 140, "g": 0, "b": 200,
+        "ear_left":     0,      # Left ear forward (open)
+        "ear_right":    70,     # Right ear folded back
+        "ear":          40,     # Fallback (symmetric)
+        "yaw":          50,     # Slight left turn (60-10)
+        "pitch_offset": -3,     # 22° (slight head raise, thinking posture)
+        "r": 120, "g": 0, "b": 180,
     },
 
     "listen": {
         "tier": 1,
         "ear":          0,
-        "yaw":          60,     # face tracking 会覆盖
-        "pitch_offset": 0,
+        "yaw":          75,     # 15° right turn (60+15); face tracking overrides this
+        "pitch_offset": -2,     # 23° (slightly raised)
         "r": 0, "g": 160, "b": 50,
     },
 
-    # ── Tier 2：反射行为 ──────────────────────────────────────
+    # ── Tier 2: Reflex behaviours ─────────────────────────────────────────
 
     "reflex_alert": {
         "tier": 2,
-        "ear":          0,
+        "ear":          0,      # Ears snap forward at reflex start
         "yaw":          60,
-        "pitch_offset": -5,     # 微抬头
-        "r": 30, "g": 200, "b": 80,  # 偏绿但不如 listen 那么鲜绿
+        "pitch_offset": -5,     # 20° (slight raise)
+        "r": 0, "g": 255, "b": 255,
         "cooldown_sec": 8,
-        "scan_left":  20,       # 扫描到 20°
-        "scan_right": 100,      # 扫描到 100°
+        "scan_left":  20,       # Scan leftmost yaw
+        "scan_right": 100,      # Scan rightmost yaw
     },
 
     "reflex_shy": {
         "tier": 2,
         "ear":          100,
-        "yaw":          90,     # 右转（60+30=90°）
-        "pitch_offset": 10,     # 30°（低头）
-        "r": 100, "g": 0, "b": 50,
+        "yaw":          90,     # Turn right (60+30)
+        "pitch_offset": 10,     # 35° (head lowered)
+        "r": 255, "g": 0, "b": 0,   # Hard red (overrides in animShy)
         "cooldown_sec": 45,
     },
 }
